@@ -20,7 +20,7 @@
 - name: Install Splunk from .deb package
   apt: "deb=/root/{{splunk_package_file}}"
   register: splunk_installed
-  when: splunk_version_check.stdout == "" or splunk_version_check.stdout is version(splunk_version, '<')
+  when: splunk_version_check is skipped or splunk_version_check.stdout is version(splunk_version, '<')
 
 # Fix up perms on filesystem after user and group created
 - name: Fix up perms after splunk user created
