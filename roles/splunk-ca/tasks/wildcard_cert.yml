@@ -1,0 +1,43 @@
+---
+# Clean up certs if forced
+- name: Clean wildcard keys and certs for forced regeneration
+  shell: "rm -f {{ ca_generated_certs_dir }}/{{ item }}*"
+  args:
+    chdir: "{{ ca_generated_certs_dir }}"
+  when: ca_force_certify_nodes|default(False)
+  with_items:
+    - wildcard
+
+# Generate wildcard certificate on the CA and then move it later
+- name: Generate an OpenSSL private key for wildcard cert.
+  openssl_privatekey:
+    path: "{{ ca_generated_certs_dir }}/{{ item }}-priv-key.pem"
+    passphrase: "{{ stage.ssl.splunk_cluster_wildcard_sslPassword }}"
+    cipher: "aes256"
+    size: 2048
+    owner: root
+    group: root
+    mode: '0600'
+  with_items:
+    - wildcard
+
+- name: Generate an OpenSSL CSR for wildcard cert.
+  openssl_csr:
+    path: "{{ ca_generated_certs_dir }}/{{ item }}.csr"
+    privatekey_path: "{{ ca_generated_certs_dir }}/{{ item }}-priv-key.pem"
+    privatekey_passphrase: "{{ stage.ssl.splunk_cluster_wildcard_sslPassword }}"
+    common_name: "*.{{ stage.ca.ca_domain }}"
+    owner: root
+    group: root
+    mode: '0600'
+  with_items:
+    - wildcard
+
+- name: Generate a Signed OpenSSL certificate for wildcard cert.
+  shell: "openssl x509 -req -days {{ ca_default_days }} -in {{ ca_generated_certs_dir }}/{{ item }}.csr -CA {{ ca_generated_certs_dir }}/{{ ca_cert }} -CAkey {{ ca_generated_certs_dir }}/{{ ca_key }} -CAcreateserial -out {{ ca_generated_certs_dir }}/{{ item }}-cert.pem -passin pass:'{{ stage.ca.ca_sslPassword }}' -extensions v3_req -extfile /usr/lib/ssl/openssl.cnf"
+  args:
+    chdir: "{{ ca_generated_certs_dir }}"
+    creates: "{{ ca_generated_certs_dir }}/{{ item }}-cert.pem"
+  with_items:
+    - wildcard
+  no_log: true

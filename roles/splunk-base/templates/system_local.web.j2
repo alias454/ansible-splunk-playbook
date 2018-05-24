@@ -1,0 +1,15 @@
+[settings]
+{% if use_splunk_web -%}
+enableSplunkWebSSL = true
+httpport = {{ splunk_httpport }}
+
+{% if use_internal_ca -%}
+privKeyPath = {{ stage.ssl.splunkweb_privKeyPath | regex_replace('(XXXHOSTCERTXXX)', ansible_hostname + '-splunkweb-priv-key.pem') }}
+serverCert = {{ stage.ssl.splunkweb_serverCert | regex_replace('(XXXHOSTCERTXXX)', ansible_hostname + '-splunkweb-cert-bundle.pem') }}
+{% else -%}
+privKeyPath = etc/auth/splunkweb/privkey.pem
+caCertPath = etc/auth/splunkweb/cert.pem
+{%- endif %}
+{% else -%}
+startwebserver = 0
+{%- endif %}

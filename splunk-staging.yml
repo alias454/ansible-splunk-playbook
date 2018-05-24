@@ -1,0 +1,38 @@
+---
+# Configure all splunk nodes with common configuration
+- name: Setup base config on Splunk servers
+  hosts: "{{ servers | default('splunk-staging') }}"
+  roles:
+    - { role: common, tags: common }
+    - { role: splunk-ca, tags: splunk-ca }
+    - { role: splunk-base, tags: splunk-base }
+
+# Install license on the License Master
+- name: Setup config on Splunk License Master
+  hosts: "{{ lm_servers | default('splunk-staging-lm') }}"
+  roles:
+    - { role: splunk-license-master, tags: splunk-license-master }
+
+# Configure the Deployment Server
+- name: Setup config on Splunk Deployment Server
+  hosts: "{{ ds_servers | default('splunk-staging-ds') }}"
+  roles:
+    - { role: splunk-deployment-server, tags: splunk-deployment-server }
+
+# Configure the Cluster Master
+- name: Setup config on Splunk Cluster Master
+  hosts: "{{ cm_servers | default('splunk-staging-cm') }}"
+  roles:
+    - { role: splunk-cluster-master, tags: splunk-cluster-master }
+
+# Add the Search Heads to the cluster
+- name: Setup config on Splunk Search Heads
+  hosts: "{{ search_servers | default('splunk-staging-search') }}"
+  roles:
+    - { role: splunk-search-heads, tags: splunk-search-heads }
+
+# Add the Peer Nodes to the cluster
+- name: Setup config on Splunk Peer Nodes
+  hosts: "{{ idx_servers | default('splunk-staging-idx') }}"
+  roles:
+    - { role: splunk-peer-nodes, tags: splunk-peer-nodes }

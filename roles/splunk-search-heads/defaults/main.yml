@@ -1,0 +1,15 @@
+---
+# Configure Search Heads defaults
+
+splunk_base: '/opt/splunk'
+
+# Use multisite or single site cluster config
+#splunk_cluster_pass4SymmKey: 'located in secrets file'
+use_multisite_config: "true" #set to false when not using
+
+# Multisite config options http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/MultisiteCLI
+search_site: "site0"
+
+# For more info about roles http://docs.splunk.com/Documentation/Splunk/7.1.0/Admin/authorizeconf
+# To use a custom roles file, create a file in the custom_files folder
+custom_roles_file: 'custom_roles.yml'

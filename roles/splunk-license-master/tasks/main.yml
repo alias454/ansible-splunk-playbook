@@ -1,0 +1,43 @@
+---
+# Configure License Master
+- name: Include Secrets
+  include_vars: "./group_vars/secrets/secrets.yml"
+
+# Sets stage based on the deploy_stage environment variable
+- set_fact: stage="{{ vars[deploy_stage] }}"
+- set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
+  when: use_stage_spec|default(False)
+
+- name: Create Enterprise licenses dir
+  file:
+    path: "{{ splunk_base }}/etc/licenses/enterprise"
+    owner: splunk
+    group: splunk
+    mode: '0750'
+    state: directory
+
+- name: Copy over Splunk license file
+  copy:
+    src: "./group_vars/secrets/{{ splunk_license_file }}"
+    dest: "{{ splunk_base }}/etc/licenses/enterprise/"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  no_log: true
+
+- name: Check if license already added
+  shell: "echo $({{ splunk_base }}/bin/splunk list licenser-localslave -auth admin:{{ stage.splunk_current_admin_password }} | grep '{{ license_guid_values }}')"
+  register: license_check
+  become_user: splunk
+  check_mode: no
+  changed_when: False
+  ignore_errors: True
+  no_log: true
+
+- name: Install Splunk Enterprise license key
+  shell: "echo $({{ splunk_base }}/bin/splunk add licenses {{ splunk_base }}/etc/licenses/enterprise/{{ splunk_license_file }} -auth admin:{{ stage.splunk_current_admin_password }})"
+  become_user: splunk
+  ignore_errors: True
+  when: license_check.stdout == ""
+  notify: restart splunk
+  no_log: true

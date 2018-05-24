@@ -1,0 +1,27 @@
+---
+- name: Create openssl configuration directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+  with_items:
+    - "{{ ca_conf_dir }}"
+
+- name: Deploy openssl configuration items
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ ca_conf_dir }}/{{ item }}"
+    owner: root
+    group: root
+  with_items:
+    - serial
+    - ca.conf
+
+- name: Ensure directory exists for generated TLS certs.
+  file:
+    path: "{{ ca_generated_certs_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'

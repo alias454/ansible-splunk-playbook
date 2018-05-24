@@ -1,0 +1,39 @@
+---
+# Clean up certs if forced
+- name: Clean keys and certs for forced regeneration
+  shell: "rm -f {{ ca_generated_certs_dir }}/{{ item }}*"
+  args:
+    chdir: "{{ ca_generated_certs_dir }}"
+  loop: "{{ ansible_play_batch }}"
+  when: ca_force_certify_nodes|default(False)
+
+# Generate all certificates on the CA and then we can move them to each node
+- name: Generate an OpenSSL private key for client nodes.
+  openssl_privatekey:
+    path: "{{ ca_generated_certs_dir }}/{{ item }}-priv-key.pem"
+    passphrase: "{{ stage.ssl.splunk_cluster_sslPassword }}"
+    cipher: "aes256"
+    size: 2048
+    owner: root
+    group: root
+    mode: '0600'
+  loop: "{{ ansible_play_batch }}"
+
+- name: Generate an OpenSSL CSR for client nodes.
+  openssl_csr:
+    path: "{{ ca_generated_certs_dir }}/{{ item }}.csr"
+    privatekey_path: "{{ ca_generated_certs_dir }}/{{ item }}-priv-key.pem"
+    privatekey_passphrase: "{{ stage.ssl.splunk_cluster_sslPassword }}"
+    common_name: "{{ item }}.{{ stage.ca.ca_domain }}"
+    owner: root
+    group: root
+    mode: '0600'
+  loop: "{{ ansible_play_batch }}"
+
+- name: Generate a Signed OpenSSL certificate for client nodes.
+  shell: "openssl x509 -req -days {{ ca_default_days }} -in {{ ca_generated_certs_dir }}/{{ item }}.csr -CA {{ ca_generated_certs_dir }}/{{ ca_cert }} -CAkey {{ ca_generated_certs_dir }}/{{ ca_key }} -CAcreateserial -out {{ ca_generated_certs_dir }}/{{ item }}-cert.pem -passin pass:'{{ stage.ca.ca_sslPassword }}' -extensions v3_req -extfile /usr/lib/ssl/openssl.cnf"
+  args:
+    chdir: "{{ ca_generated_certs_dir }}"
+    creates: "{{ ca_generated_certs_dir }}/{{ item }}-cert.pem"
+  loop: "{{ ansible_play_batch }}"
+  no_log: true

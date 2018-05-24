@@ -1,0 +1,9 @@
+---
+# Deploy the Splunk Universal Forwarder with common configuration
+- name: Setup Splunk Universal Forwarder
+  hosts: "{{ uf_servers | default('splunk-staging-UF') }}"
+  vars:
+    deploy_stage: "{{ deploy_stage_value | default('staging') }}"
+  roles:
+    - { role: common, tags: common }
+    - { role: splunk-universal-forwarder, tags: splunk-universal-forwarder }

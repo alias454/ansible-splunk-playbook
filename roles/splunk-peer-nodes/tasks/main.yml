@@ -1,0 +1,40 @@
+---
+# Configure Peer Nodes
+- name: Include Secrets
+  include_vars: "./group_vars/secrets/secrets.yml"
+
+# Sets stage based on the deploy_stage environment variable
+- set_fact: stage="{{ vars[deploy_stage] }}"
+- set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
+  when: use_stage_spec|default(False)
+
+- name: Check if clustering is enabled
+  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:{{ stage.splunk_current_admin_password }} | grep '{{ stage.splunk_master_uri }}')"
+  become_user: splunk
+  register: idx_clustering_enabled
+  check_mode: no
+  changed_when: False
+  ignore_errors: True
+  no_log: true
+
+- name: Add Peer Nodes to cluster
+  shell: "{{ splunk_base }}/bin/splunk edit cluster-config -mode slave -master_uri 'https://{{ stage.splunk_master_uri }}' -replication_port 9887 -secret '{{ stage.splunk_cluster_pass4SymmKey }}'"
+  become_user: splunk
+  register: idx_cluster_configured
+  ignore_errors: True
+  when: idx_clustering_enabled.stdout == "" and use_multisite_config == 'false'
+  notify: restart splunk
+  no_log: true
+
+- name: Add Peer Nodes to Multisite cluster
+  shell: "{{ splunk_base }}/bin/splunk edit cluster-config -mode slave -site {{ site }} -master_uri 'https://{{ stage.splunk_master_uri }}' -replication_port 9887 -secret '{{ stage.splunk_cluster_pass4SymmKey }}'"
+  become_user: splunk
+  register: idx_cluster_configured
+  ignore_errors: True
+  when: idx_clustering_enabled.stdout == "" and use_multisite_config == 'true'
+  notify: restart splunk
+  no_log: true
+
+#- name: Set default data store
+#  command: "{{ splunk_base }}/bin/splunk set datastore-dir /opt/splunk/data -auth admin:{{ stage.splunk_current_admin_password }}"
+#  no_log: true

@@ -1,0 +1,11 @@
+---
+# Configure Peer Nodes defaults
+
+splunk_base: '/opt/splunk'
+
+# Use multisite or single site cluster config
+#splunk_cluster_pass4SymmKey: 'located in secrets file'
+use_multisite_config: "true" #set to false when not using
+
+# Multisite config options http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/MultisiteCLI
+site: "site1"

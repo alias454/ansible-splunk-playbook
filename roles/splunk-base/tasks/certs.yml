@@ -1,0 +1,63 @@
+---
+- name: Ensure directory exists for local self-signed TLS certs.
+  file:
+    path: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    state: directory
+    owner: splunk
+    group: splunk
+    mode: '0750'
+
+- name: Remove a cert bundle if it exists to allow creation of new
+  shell: "rm -f {{ ansible_hostname }}-{{ item }}"
+  args:
+    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    removes: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ ansible_hostname }}-{{ item }}"
+  become_user: splunk
+  when: use_internal_ca|default(False) and ca_force_create|default(False)
+  with_items:
+    - splunkweb-cert-bundle.pem
+    - cert-bundle.pem
+  no_log: true
+
+# Copy host keys and certs to client node using protected named certs
+- name: "Distribute priv-key.pem, cert.pem, and ca-pubkey.pem to host"
+  copy:
+    src: "{{ ca_distribution_dir }}/{{ item }}"
+    dest: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item }}"
+    owner: splunk
+    group: splunk
+    mode: '0600'
+  with_items:
+    - "{{ ansible_hostname }}-priv-key.pem"
+    - "{{ ansible_hostname }}-cert.pem"
+    - ca-cert.pem
+  no_log: true
+
+- name: Generate a cert bundle from artifacts
+  shell: "cat {{ ansible_hostname }}-cert.pem {{ ansible_hostname }}-priv-key.pem ca-cert.pem > {{ ansible_hostname }}-cert-bundle.pem"
+  register: bundle_check
+  args:
+    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    creates: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ ansible_hostname }}-cert-bundle.pem"
+  become_user: splunk
+  when: use_internal_ca|default(False)
+  no_log: true
+
+- name: Generate a passwordless key for SplunkWeb.
+  shell: "openssl rsa -in {{ ansible_hostname }}-priv-key.pem -out {{ ansible_hostname }}-splunkweb-priv-key.pem -passin pass:'{{ stage.ssl.splunk_cluster_sslPassword }}'"
+  args:
+    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    creates: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ ansible_hostname }}-splunkweb-priv-key.pem"
+  become_user: splunk
+  when: use_splunk_web|default(False) and use_internal_ca|default(False)
+  no_log: true
+
+- name: Generate a cert bundle for SplunkWeb
+  shell: "cat {{ ansible_hostname }}-cert.pem {{ ansible_hostname }}-splunkweb-priv-key.pem > {{ ansible_hostname }}-splunkweb-cert-bundle.pem"
+  register: splunkweb_bundle_check
+  args:
+    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    creates: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ ansible_hostname }}-splunkweb-cert-bundle.pem"
+  become_user: splunk
+  when: use_splunk_web|default(False) and use_internal_ca|default(False)
+  no_log: true

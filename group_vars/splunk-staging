@@ -1,0 +1,32 @@
+---
+# Override default values
+# Specific configuration for global staging
+deploy_stage: "staging"
+
+# alerts action email settings
+#splunk_mailserver: 'located in secrets file'
+#splunk_maxresults: 'located in secrets file'
+
+# Configure Deployment server for use
+use_deployment_server: 1
+org_prefix: "org"
+org_name: "myOrg"
+
+# Use Cluster Master as CA
+use_internal_ca: 'true'
+
+# When toggling use_internal_ca setting you may want to use splunk defaults
+use_stage_spec: false
+
+# ca_force_create and ca_force_certify_nodes are designed to prevent overriding of existing certificates !
+ca_force_create: false           # Force creating even if files exist on the node
+ca_force_certify_nodes: false    # Force creating of node certificates
+
+# Use multisite or single site cluster config
+#splunk_cluster_pass4SymmKey: 'located in secrets file'
+use_multisite_config: "true" #set to false when not using
+
+# Multisite config options http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/MultisiteCLI
+site: "site1"
+search_site: "site0"
+available_sites: "site1,site2"

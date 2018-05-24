@@ -1,0 +1,23 @@
+---
+# Configure Cluster Master defaults
+
+splunk_base: '/opt/splunk'
+
+# Manage apps and indexes using a deployment server.
+# http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/Updatepeerconfigurations
+use_deployment_server: 1
+
+# Use multisite or single site cluster config
+#splunk_cluster_pass4SymmKey: 'located in secrets file'
+use_multisite_config: "true" #set to false when not using
+
+# Singlesite config options
+cluster_replication_factor: 2
+cluster_search_factor: 2
+
+# Multisite config options http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/MultisiteCLI
+site: "site1"
+cluster_label: "US_Cluster"
+available_sites: "site1,site2"
+site_replication_factor: "origin:2,total:2"
+site_search_factor: "origin:2,total:2"

@@ -1,0 +1,16 @@
+---
+# Configure Splunk Cluster nodes
+- name: Include Secrets
+  include_vars: "./group_vars/secrets/secrets.yml"
+
+# Sets stage based on the deploy_stage environment variable
+- set_fact: stage="{{ vars[deploy_stage] }}"
+- set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
+  when: use_stage_spec|default(False)
+
+- import_tasks: kernel.yml
+- import_tasks: mounts.yml
+- import_tasks: deploy.yml
+- import_tasks: certs.yml
+- import_tasks: config.yml
+- import_tasks: service.yml

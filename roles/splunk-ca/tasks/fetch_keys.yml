@@ -1,0 +1,22 @@
+---
+- name: "Copy keys from CA to ansible machine for distribution"
+  fetch: src="{{ ca_generated_certs_dir }}/{{ item }}-priv-key.pem" dest="{{ ca_distribution_dir }}/{{ item }}-priv-key.pem" flat=yes
+  loop: "{{ ansible_play_batch }}"
+
+- name: "Copy certs from CA to ansible machine for distribution"
+  fetch: src="{{ ca_generated_certs_dir }}/{{ item }}-cert.pem" dest="{{ ca_distribution_dir }}/{{ item }}-cert.pem" flat=yes
+  loop: "{{ ansible_play_batch }}"
+
+- name: "Copy ca-cert.pem, ca-key.pem, and ca-pubkey.pem"
+  fetch: src="{{ ca_generated_certs_dir }}/{{ item }}" dest="{{ ca_distribution_dir }}/{{ item }}" flat=yes
+  with_items:
+    - "{{ ca_cert }}"
+    - "{{ ca_key }}"
+    - "{{ ca_pub_key }}"
+
+- name: "Copy wildcard cert ad private key"
+  fetch: src="{{ ca_generated_certs_dir }}/{{ item }}" dest="{{ ca_distribution_dir }}/{{ item }}" flat=yes
+  when: ca_wildcard|default(False)
+  with_items:
+    - wildcard-cert.pem
+    - wildcard-priv-key.pem

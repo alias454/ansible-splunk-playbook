@@ -1,0 +1,82 @@
+---
+- name: Copy Splunk inputs.conf for system local
+  copy:
+    content: |
+      [default]
+      host = $decideOnStartup
+
+      # BASE SETTINGS
+      [splunktcp-ssl:9997]
+      disabled = 0
+
+      [SSL]
+      # Absolute path to the certificate. The default certificate is
+      serverCert = {{ stage.ssl.splunk_serverCert | regex_replace('(XXXHOSTCERTXXX)', ansible_hostname + '-cert-bundle.pem') }}
+      sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }}
+      sslVersions = tls1.2
+      cipherSuite = TLSv1.2
+
+      # There is no need to validate the default server certificate
+      requireClientCert = false
+    dest: "{{ splunk_base }}/etc/system/local/inputs.conf"
+    force: no
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  no_log: true
+
+- name: Copy Splunk web.conf for system
+  template:
+    src: system_local.web.j2
+    dest: "{{ splunk_base }}/etc/system/local/web.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+
+- name: Copy Splunk authentication.conf for system
+  template:
+    src: system_local.authentication.j2
+    dest: "{{ splunk_base }}/etc/system/local/authentication.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  when: use_splunk_web|default(False)
+
+- name: Copy Splunk alert_actions.conf for system
+  template:
+    src: system_local.alert_actions.j2
+    dest: "{{ splunk_base }}/etc/system/local/alert_actions.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  when: use_splunk_web|default(False)
+
+- name: Use splunk hash-passwd to return a password hash
+  command: "{{ splunk_base }}/bin/splunk hash-passwd {{ stage.splunk_default_admin_password }}"
+  register: splunk_hashed_password
+  become_user: splunk
+  check_mode: no
+  changed_when: False
+  ignore_errors: True
+  no_log: true
+
+- name: Check for user seed file
+  stat: "path={{ splunk_base }}/etc/system/local/user-seed.conf"
+  register: seed_file
+
+- name: Check for passwd file
+  stat: "path={{ splunk_base }}/etc/passwd"
+  register: passwd_file
+
+- name: Create default admin user seed file
+  copy:
+    content: |
+      [user_info]
+      USERNAME = admin
+      HASHED_PASSWORD = {{ splunk_hashed_password.stdout }}
+    dest: "{{ splunk_base }}/etc/system/local/user-seed.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  when: seed_file.stat.exists == False and passwd_file.stat.exists == False
+  no_log: true

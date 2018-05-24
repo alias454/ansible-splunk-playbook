@@ -1,0 +1,54 @@
+---
+# Check for CA key existence (so we don't generate a new onw on every run)
+- block:
+
+    - name: "Check if ca-key.pem exists"
+      stat: path="{{ ca_default_ssl_key_dir }}/{{ ca_key }}"
+      register: _key_file
+
+    - name: "Key at {{ ca_default_ssl_key_dir }}/{{ ca_key }} exists"
+      debug: msg="{{ ca_default_ssl_key_dir }}/{{ ca_key }} is present
+                  - Since the ca_key exists, this role will not generate a new one
+                  unless you invoke ca_force_create."
+      when: _key_file.stat.exists
+
+    - name: "Set _ca_key_exists to true"
+      set_fact:
+        _ca_key_exists: true
+      when: _key_file.stat.exists
+
+    - name: "set _ca_key_exists var to false"
+      set_fact:
+        _ca_key_exists: false
+      when: not _key_file.stat.exists
+
+# Check for CA cert existence (so we don't generate a new onw on every run)
+- block:
+
+    - name: "Check if ca-cert.pem exists"
+      stat: path="{{ ca_default_ssl_certs_dir }}/{{ ca_cert }}"
+      register: cert_file
+
+    - name: "Ensure that the existing certificate is still valid 2 weeks (1209600 seconds) from now"
+      openssl_certificate:
+        path: "{{ ca_default_ssl_certs_dir }}/{{ ca_cert }}"
+        provider: assertonly
+        valid_in: "{{ ca_cert_expiration_panic_threshold }}"
+      when: cert_file.stat.exists
+      register: cert_validity
+
+    - debug: msg="{{ ca_default_ssl_certs_dir }}/{{ ca_cert }} is still valid no need to generate"
+      when: cert_file.stat.exists and cert_validity is not changed
+
+    - set_fact:
+        ca_force_create: false
+        _ca_missing_cert: false
+      when: cert_file.stat.exists and cert_validity is not changed
+
+    - debug: msg="{{ ca_default_ssl_certs_dir }}/{{ ca_cert }} is not valid - ca_force_create will be set"
+      when: not cert_file.stat.exists or cert_validity is changed
+
+    - set_fact:
+        ca_force_create: true
+        _ca_missing_cert: true
+      when: not cert_file.stat.exists or cert_validity is changed

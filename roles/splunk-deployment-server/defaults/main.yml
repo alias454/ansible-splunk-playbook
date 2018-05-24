@@ -1,0 +1,30 @@
+---
+# Configure Deployment Server defaults
+
+splunk_base: '/opt/splunk'
+org_prefix: "org"
+org_name: "myOrg"
+
+# Configure Deployment server for use
+use_deployment_server: 1
+
+# Use multisite or single site cluster config
+#splunk_cluster_pass4SymmKey: 'located in secrets file'
+use_multisite_config: "true" #set to false when not using
+
+# To use a custom indexes file, create a file in the custom_files folder
+custom_indexes_file: "custom_indexes.conf"
+
+# Set under the appropriate environment variable in the secrets file
+# splunk certificate paths
+default_stage:
+  splunk_cluster_pass4SymmKey: 'someRandomKey'
+  ssl:
+    splunk_cluster_sslPassword: 'password'
+    splunk_clientCert: "$SPLUNK_HOME/etc/auth/server.pem"
+    splunk_sslRootCAPath: "/opt/splunk/etc/auth/cacert.pem"
+    splunk_serverCert: "$SPLUNK_HOME/etc/auth/server.pem"
+    splunkweb_privKeyPath: "etc/auth/splunkweb/privkey.pem"
+    splunkweb_serverCert: "etc/auth/splunkweb/cert.pem"
+    splunkforwarder_clientCert: "$SPLUNK_HOME/etc/auth/server.pem"
+    splunkforwarder_sslRootCAPath: "/opt/splunkforwarder/etc/auth/cacert.pem"

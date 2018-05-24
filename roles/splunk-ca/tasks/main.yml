@@ -1,0 +1,58 @@
+---
+# Configure Splunk private CA
+- name: Include Secrets
+  include_vars: "./group_vars/secrets/secrets.yml"
+
+# Sets stage based on the deploy_stage environment variable
+- set_fact: stage="{{ vars[deploy_stage] }}"
+- set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
+  when: use_stage_spec|default(False)
+
+# Group includes
+- block:
+
+    # Runs on CA -- Check if CA certs are defined or close to expiring
+    - import_tasks: check-ca-certs.yml
+      when:
+        - not ca_force_create|default(False)
+        - "stage.ca.ca_descriptor in ansible_hostname"
+
+    # Runs on CA -- ca_force_create defaults to false
+    - import_tasks: deploy-ca-config.yml
+      when:
+        - ca_init|default(False)
+        - ca_force_create|default(False)
+        - "stage.ca.ca_descriptor in ansible_hostname"
+
+    # Runs on CA -- ca_force_create defaults to false
+    - import_tasks: deploy-ca-certs.yml
+      when:
+        - ca_init|default(False)
+        - ca_force_create|default(False)
+        - "stage.ca.ca_descriptor in ansible_hostname"
+
+    # Runs on CA
+    - import_tasks: certify_nodes.yml
+      when:
+        - ca_certify_nodes|default(False)
+        - "stage.ca.ca_descriptor in ansible_hostname"
+
+    # Runs on CA
+    - import_tasks: wildcard_cert.yml
+      when:
+        - ca_wildcard|default(False)
+        - "stage.ca.ca_descriptor in ansible_hostname"
+
+    # Runs on CA
+    - import_tasks: fetch_keys.yml
+      when:
+        - ca_fetch_keys|default(False)
+        - "stage.ca.ca_descriptor in ansible_hostname"
+
+    # Runs on ALL hosts
+    # Distribute keys to nodes defaults to false
+    # Distribute root cert to nodes defaults to true
+    - import_tasks: distribute_keys.yml
+      when: ca_distribute_keys|default(False) or ca_distribute_ca_cert|default(False) or ca_distribute_root_keys|default(False)
+
+  when: use_internal_ca|default(False)

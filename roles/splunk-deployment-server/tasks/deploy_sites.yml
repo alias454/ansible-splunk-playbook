@@ -1,0 +1,29 @@
+---
+# Configure Deployment Server
+
+# This app deploys sites server config
+- name: "Create initial {{ org_prefix }} multisite apps directories"
+  file:
+    path: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_app }}/local/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    state: directory
+  when: use_multisite_config == 'true'
+  with_items:
+    - { deployment_app: '{{ org_prefix }}_site_1_base' }
+    - { deployment_app: '{{ org_prefix }}_site_2_base' }
+
+- name: "Create {{ org_prefix }}_site_X_base apps for deployment"
+  copy:
+    src: "deployment-apps/org_site_{{ item.site }}_base/local/{{ item.file }}"
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_site_{{ item.site }}_base/local/{{ item.file }}"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  when: use_multisite_config == 'true'
+  with_items:
+    - { file: 'app.conf', site: '1' }
+    - { file: 'server.conf', site: '1' }
+    - { file: 'app.conf', site: '2' }
+    - { file: 'server.conf', site: '2' }

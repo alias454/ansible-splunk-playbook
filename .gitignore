@@ -1,0 +1,8 @@
+*.deb
+*.tgz
+*.pem
+*.lic
+*.retry
+.idea
+secrets/
+secrets.yml

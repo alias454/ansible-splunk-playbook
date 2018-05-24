@@ -1,0 +1,33 @@
+---
+# Clean up installed artifacts
+# Use for development but not in a real environment
+
+# Not a full clean but removes items most useful for testing
+- name: Shutdown Splunk using the service module
+  service: name=splunk state=stopped
+  ignore_errors: True
+
+- name: Remove Splunk using the apt module
+  apt:
+    name: "{{ item }}"
+    state: absent
+  ignore_errors: True
+  with_items:
+    - 'splunk'
+
+- name: Remove leftover Splunk artifacts using shell module
+  shell: "{{ item }}"
+  ignore_errors: True
+  with_items:
+    - "rm -f /etc/init.d/splunk"
+    - "rm -rf /storage/splunk"
+    - "rm -rf /coldstorage/splunk"
+    - "rm -rf /etc/ssl/ca-cert"
+
+- name: Reboot and let's start over
+  shell: "{{ item }}"
+  ignore_errors: True
+  with_items:
+    - "reboot"
+
+- debug: msg="Run 'ansible splunk-staging -m ping' to verify hosts are back up"

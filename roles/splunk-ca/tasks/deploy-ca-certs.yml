@@ -1,0 +1,37 @@
+---
+# Clean up certs if forced
+- name: Clean CA keys and certs for forced regeneration
+  shell: "rm -f {{ ca_generated_certs_dir }}/{{ item }}*"
+  args:
+    chdir: "{{ ca_generated_certs_dir }}"
+  when: ca_force_create|default(False)
+  with_items:
+    - "{{ ca_cert }}"
+    - "{{ ca_key }}"
+    - "{{ ca_pub_key }}"
+
+- name: Generate an OpenSSL CA private key.
+  openssl_privatekey:
+    path: "{{ ca_generated_certs_dir }}/{{ ca_key }}"
+    passphrase: "{{ stage.ca.ca_sslPassword }}"
+    cipher: "aes256"
+    owner: root
+    group: root
+    mode: '0600'
+  when: _ca_key_exists is undefined or ca_force_create == true
+
+- name: Generate an OpenSSL CA public key.
+  shell: "openssl rsa -in {{ ca_generated_certs_dir }}/{{ ca_key }} -pubout -out {{ ca_generated_certs_dir }}/{{ ca_pub_key }} -passin pass:'{{ stage.ca.ca_sslPassword }}'"
+  args:
+    chdir: "{{ ca_generated_certs_dir }}"
+  when: _ca_missing_cert is undefined or ca_force_create == true
+  no_log: true
+
+- name: Generate a Self Signed OpenSSL CA certificate.
+  shell: "openssl req -config {{ ca_conf_dir }}/ca.conf -new -key {{ ca_generated_certs_dir }}/{{ ca_key }} -x509 -days {{ ca_default_days }} -out {{ ca_generated_certs_dir }}/{{ ca_cert }} -passin pass:'{{ stage.ca.ca_sslPassword }}' -subj \"/CN={{ item }}\""
+  args:
+    chdir: "{{ ca_generated_certs_dir }}"
+  when: _ca_missing_cert is undefined or ca_force_create == true
+  with_items:
+    - "{{ ansible_fqdn }}"
+  no_log: true

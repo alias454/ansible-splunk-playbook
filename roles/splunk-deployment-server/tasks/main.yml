@@ -1,0 +1,40 @@
+---
+# Configure Deployment Server
+- name: Include Secrets
+  include_vars: "./group_vars/secrets/secrets.yml"
+
+# Sets stage based on the deploy_stage environment variable
+- set_fact: stage="{{ vars[deploy_stage] }}"
+- set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
+  when: use_stage_spec|default(False)
+
+- name: Check for serverclass.conf file
+  stat: "path={{ splunk_base }}/etc/system/local/serverclass.conf"
+  register: serverclass_file
+
+- name: Enable Deployment Server
+  shell: "{{ splunk_base }}/bin/splunk enable deploy-server -auth admin:{{ stage.splunk_current_admin_password }}"
+  become_user: splunk
+  ignore_errors: True
+  when: serverclass_file.stat.exists == False
+  notify: restart splunk
+  no_log: true
+
+- name: Create serverclass.conf to local system
+  template:
+    src: system_local.serverclass.j2
+    dest: "{{ splunk_base }}/etc/system/local/serverclass.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  notify: restart splunk
+
+# Import custom apps
+- import_tasks: deploy_misc_internal_apps.yml
+- import_tasks: deploy_cluster_indexer_base.yml
+- import_tasks: deploy_cluster_forwarder_outputs.yml
+- import_tasks: deploy_forwarder_outputs.yml
+- import_tasks: deploy_sites.yml
+
+# Import Splunkbase apps
+- import_tasks: deploy_Splunk_TA_nix.yml

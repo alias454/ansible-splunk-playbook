@@ -1,0 +1,48 @@
+---
+# defaults file for splunk-ca
+use_internal_ca: 'true'
+
+# ca_force_create and ca_force_certify_nodes are designed to prevent overriding of existing certificates !
+ca_init: true                    # Install and configure the root CA (from scratch)
+ca_force_create: false           # Force creating even if files exist on the node
+ca_force_certify_nodes: false    # Force creating of node certificates
+ca_certify_nodes: true           # Generate certs for nodes
+ca_wildcard: true                # Generate wildcard cert
+ca_fetch_keys: true              # Copy key to control machine
+ca_distribute_keys: false        # Copy host keys and certs from control machine to nodes
+ca_distribute_ca_cert: true      # Copy CA cert from control machine to nodes
+ca_distribute_root_keys: true    # Copy CA cert and key to default locations on CA server
+
+# Where the certs go
+ca_certs_dir: "/usr/local/share/ca-certificates"
+ca_default_ssl_certs_dir: "/etc/ssl/certs"
+ca_default_ssl_key_dir: "/etc/ssl/private"
+ca_conf_dir: "/etc/ssl/conf"
+ca_generated_certs_dir: "/etc/ssl/ca-certs"
+
+# Where to copy the generated cert files to locally
+ca_distribution_dir: "{{ playbook_dir }}/group_vars/secrets/certs"
+
+# how long should remain before we generate a new CA cert ?
+ca_cert_expiration_panic_threshold: 1209600 # 2 weeks
+ca_default_days: "1825"
+
+# CA filenames
+ca_cert: ca-cert.pem
+ca_key: ca-key.pem
+ca_pub_key: ca-pubkey.pem
+
+# Should match the unique part of the CA's hostname
+
+# Set under the appropriate environment variable in the secrets file
+default_stage:
+  ca:
+    ca_domain: "domain.tld"
+    ca_descriptor: "CA-servername"
+    ca_country: "US"
+    ca_state: "Illinois"
+    ca_locality: "Chicago"
+    ca_organization: "myOrg"
+    ca_organizational_unit: "Security"
+    ca_email: "splunk-ca-admin@domain.tld"
+    ca_sslPassword: 'password'

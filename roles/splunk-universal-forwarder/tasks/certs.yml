@@ -1,0 +1,46 @@
+---
+- name: Ensure directory exists for local self-signed TLS certs.
+  file:
+    path: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    state: directory
+    owner: splunk
+    group: splunk
+    mode: '0750'
+
+- name: Remove a cert bundle if it exists to allow creation of new
+  shell: "rm -f {{ item }}"
+  args:
+    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    removes: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item }}"
+  become_user: splunk
+  when: use_internal_ca|default(False) and ca_force_create|default(False)
+  with_items:
+    - wildcard-cert-bundle.pem
+  no_log: true
+
+# Copy wildcard host keys and certs to client node
+- name: "Distribute wildcard-priv-key.pem, wildcard-cert.pem to host"
+  copy:
+    src: "{{ ca_distribution_dir }}/{{ item }}"
+    dest: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item }}"
+    owner: splunk
+    group: splunk
+    mode: '0600'
+  with_items:
+    - wildcard-cert.pem
+    - wildcard-priv-key.pem
+    - ca-cert.pem
+  when: use_deployment_server|default(False) and use_internal_ca|default(False)
+  no_log: true
+
+- name: Generate a cert bundle from wildcard artifacts
+  shell: "cat wildcard-cert.pem wildcard-priv-key.pem ca-cert.pem > wildcard-cert-bundle.pem"
+  register: wildcard_bundle_check
+  args:
+    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    creates: "{{ splunk_base }}/etc/auth/{{ org_name }}/wildcard-cert-bundle.pem"
+  become_user: splunk
+  when: use_deployment_server|default(False) and use_internal_ca|default(False)
+  no_log: true
+
+- debug: msg={{ wildcard_bundle_check }}

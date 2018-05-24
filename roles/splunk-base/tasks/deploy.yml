@@ -1,0 +1,33 @@
+---
+- name: Copy over the Splunk installation deb
+  copy: "src={{ splunk_package_file }} dest=/root/"
+
+- name: Checking if Splunk is installed
+  stat: "path={{ splunk_base }}/bin/splunk"
+  register: splunk_path
+
+- name: Splunk is installed
+  debug: msg='splunk is installed at {{ splunk_base }}'
+  when: splunk_path.stat.exists
+
+- name: Get Splunk version
+  shell: "echo $(cat {{ splunk_base }}/etc/splunk.version | grep VERSION | cut -d'=' -f2)"
+  register: splunk_version_check
+  changed_when: False
+  check_mode: no
+  when: splunk_path.stat.exists
+
+- name: Install Splunk from .deb package
+  apt: "deb=/root/{{splunk_package_file}}"
+  register: splunk_installed
+  when:
+    - splunk_version_check is succeeded
+    - splunk_version_check.stdout is version(splunk_version, '<')
+
+# Fix up perms on filesystem after user and group created
+- name: Fix up perms after splunk user created
+  file: dest="{{ item.mount_path }}" owner=splunk group=splunk recurse=yes
+  with_items: "{{ disk_mounts }}"
+
+- name: Sets default acl for splunk on /var/log
+  shell: setfacl -Rm u:splunk:rX,d:u:splunk:rX /var/log

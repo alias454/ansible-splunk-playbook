@@ -1,0 +1,28 @@
+---
+- name: Disables transparent-huge-pages
+  copy:
+    src: disable-transparent-hugepages.init
+    dest: "/etc/init.d/disable-transparent-hugepages"
+    mode: 0755
+
+- name: Run service disable transparent hugepages
+  service:
+    name: disable-transparent-hugepages
+    state: started
+    enabled: yes
+  when: not ansible_check_mode
+
+- name: Set swappiness to 10 in /etc/sysctl.conf
+  sysctl:
+    name: vm.swappiness
+    value: 10
+    state: present
+
+- name: Set ulimits for splunk user
+  copy:
+    content: |
+      splunk soft nofile 64000
+      splunk hard nofile 64000
+      splunk soft nproc 8192
+      splunk hard nproc 8192
+    dest: /etc/security/limits.d/10-splunk.conf

@@ -1,0 +1,50 @@
+---
+# Secrets are stored in the secrets folder that you create
+# Create the secrets folder in the ./group_vars/ folder
+
+# Required variables
+# splunk_sslPassword: 'located in secrets file'
+# splunk_pass4SymmKey: 'located in secrets file'
+# splunk_master_uri: 'located in secrets file'
+# splunk_ds_uri: 'located in secrets file'
+
+# Packages
+# Use wget to grab the latest package from splunk.com
+# Place file in roles folder under -> splunk-base/files
+splunk_package_file: 'splunk-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb'
+splunk_version: '7.1.0'
+splunk_base: '/opt/splunk'
+
+# Default disk info (will apply unless overridden by a group_var config)
+disk_mounts:
+  - device: "/dev/xvdf"
+    type: "default"
+    fs_type: "xfs"
+    mount_path: "/storage"
+
+# Enable splunk web by default and set port to use
+use_splunk_web: 1
+splunk_httpport: 8443
+
+# Set in the appropriate group_vars file
+deploy_stage: 'default_stage'
+
+# Set under the appropriate environment variable in the secrets file
+default_stage:
+  splunk_mailserver: "mail.server.tld"
+  splunk_pdf_header_left: "none"
+  splunk_pdf_header_right: "none"
+  splunk_auth_password: ''
+  splunk_auth_username: ''
+  splunk_use_tls: '0'
+  splunk_use_ssl: '0'
+  splunk_maxresults: '100'
+  ssl:
+    splunk_cluster_sslPassword: 'password'
+    splunk_clientCert: "$SPLUNK_HOME/etc/auth/myOrg/XXXHOSTCERTXXX"
+    splunk_sslRootCAPath: "/opt/splunk/etc/auth/myOrg/ca-cert.pem"
+    splunk_serverCert: "$SPLUNK_HOME/etc/auth/myOrg/XXXHOSTCERTXXX"
+    splunkweb_privKeyPath: "etc/auth/myOrg/XXXHOSTCERTXXX"
+    splunkweb_serverCert: "etc/auth/myOrg/XXXHOSTCERTXXX"
+    splunkforwarder_clientCert: "$SPLUNK_HOME/etc/auth/myOrg/XXXHOSTCERTXXX"
+    splunkforwarder_sslRootCAPath: "/opt/splunkforwarder/etc/auth/myOrg/ca-cert.pem"

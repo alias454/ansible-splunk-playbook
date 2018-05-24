@@ -1,0 +1,58 @@
+---
+# Configure Search Heads
+- name: Include Secrets
+  include_vars: "./group_vars/secrets/secrets.yml"
+
+# Sets stage based on the deploy_stage environment variable
+- set_fact: stage="{{ vars[deploy_stage] }}"
+- set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
+  when: use_stage_spec|default(False)
+
+- name: Check for custom roles file
+  local_action: "stat path=./group_vars/custom_files/{{ custom_roles_file }}"
+  register: custom_roles
+  become: no
+  tags: custom_splunk_roles
+
+- name: Create Splunk authorize.conf for system
+  copy:
+    src: "{{ item }}"
+    dest: "{{ splunk_base }}/etc/system/local/authorize.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  when: use_splunk_web|default(False)
+  with_items:
+    - "{{ custom_roles.stat.path|default('system_local.authorize.conf') }}"
+  notify: restart splunk
+  tags: custom_splunk_roles
+
+- name: Check if clustering is enabled
+  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:{{ stage.splunk_current_admin_password }} | grep '{{ stage.splunk_master_uri }}')"
+  become_user: splunk
+  register: search_clustering_enabled
+  check_mode: no
+  changed_when: False
+  ignore_errors: True
+  no_log: true
+
+- name: Add Search Heads to cluster
+  shell: "{{ splunk_base }}/bin/splunk edit cluster-config -mode searchhead -master_uri 'https://{{ stage.splunk_master_uri }}' -secret '{{ stage.splunk_cluster_pass4SymmKey }}'"
+  become_user: splunk
+  register: search_cluster_configured
+  ignore_errors: True
+  when: search_clustering_enabled.stdout == "" and use_multisite_config == 'false'
+  notify: restart splunk
+  no_log: true
+
+- name: Add Search Heads to Multisite cluster
+  shell: "{{ splunk_base }}/bin/splunk edit cluster-config -mode searchhead -site {{ search_site }} -master_uri 'https://{{ stage.splunk_master_uri }}' -secret '{{ stage.splunk_cluster_pass4SymmKey }}'"
+  become_user: splunk
+  register: search_cluster_configured
+  ignore_errors: True
+  when: search_clustering_enabled.stdout == "" and use_multisite_config == 'true'
+  notify: restart splunk
+  no_log: true
+
+# TODO: Add Search Head clustering (shclustering) capabilities
+# http://docs.splunk.com/Documentation/Splunk/7.1.0/DistSearch/SHCdeploymentoverview

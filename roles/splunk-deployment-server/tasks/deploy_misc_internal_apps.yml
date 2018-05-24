@@ -1,0 +1,63 @@
+---
+# Configure Deployment Server
+
+# Configure indexes to use with deployment cluster Master.
+# The file will be created on the Deployment server and then pushed to the CM
+# From the CM a process will run to deploy out to the indexers
+# For empty or unset values, the config will skip writing an entry in the conf file
+
+- name: "Create initial {{ org_prefix }} index apps directories"
+  file:
+    path: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_app }}/local/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    recurse: yes
+    state: directory
+  with_items:
+    - { deployment_app: '{{ org_prefix }}_indexer_volume_indexes' }
+    - { deployment_app: '{{ org_prefix }}_all_indexes' }
+
+# Check all_indexes
+- name: "Check for {{ org_prefix }}_all_indexes indexes.conf file"
+  stat: "path={{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_all_indexes/local/indexes.conf"
+  register: all_indexes_file
+
+# This app contains all index names and config and props.conf
+- name: "Create {{ org_prefix }}_all_indexes app for deployment"
+  copy:
+    src: "deployment-apps/org_all_indexes/local/{{ item.file }}"
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_all_indexes/local/{{ item.file }}"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  when: all_indexes_file.stat.exists == False
+  with_items:
+    - { file: 'app.conf' }
+    - { file: 'props.conf' }
+    - { file: 'indexes.conf' }
+
+- name: Check for custom indexes file
+  local_action: "stat path=./group_vars/custom_files/{{ custom_indexes_file }}"
+  register: custom_indexes
+  become: no
+
+- name: Add mappings to all_indexes file for deployment
+  blockinfile:
+    path: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_all_indexes/local/indexes.conf"
+    block: "{{ lookup('file', item) }}"
+    insertafter: "###### CUSTOMER INDEXES"
+  with_items:
+    - "{{ custom_indexes.stat.path|default('../files/customer_indexes.conf') }}"
+
+# This app contains maxVolumeDataSizeMB settings
+- name: "Create {{ org_prefix }}_indexer_volume_indexes app for deployment"
+  copy:
+    src: "deployment-apps/org_indexer_volume_indexes/local/{{ item.file }}"
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_indexer_volume_indexes/local/{{ item.file }}"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  with_items:
+    - { file: 'app.conf' }
+    - { file: 'indexes.conf' }

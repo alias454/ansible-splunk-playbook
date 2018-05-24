@@ -1,0 +1,6 @@
+---
+# Remove splunk on all splunk nodes matching hosts
+- name: Setup base config on Splunk servers
+  hosts: "{{ servers | default('splunk-staging') }}"
+  roles:
+    - { role: cluster-uninstall, tags: cluster-uninstall }

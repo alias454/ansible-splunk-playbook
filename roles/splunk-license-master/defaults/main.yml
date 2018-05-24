@@ -1,0 +1,5 @@
+---
+# Configure License Master defaults
+
+splunk_base: '/opt/splunk'
+splunk_license_file: "Splunk.License.lic"

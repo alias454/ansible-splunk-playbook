@@ -1,0 +1,73 @@
+#####
+##### Apps sent to the Cluster Master for distribution to the Indexers #####
+#####
+
+[serverClass:clusterMaster]
+whitelist.0 = {{ stage.splunk_master_uri | regex_replace(':8089') }}
+whitelist.1 = ip-{{ stage.splunk_master_ip | regex_replace('(\.)', '-') }}
+
+[serverClass:clusterMaster:app:{{ org_prefix }}_all_indexes]
+stateOnClient = noop
+
+[serverClass:clusterMaster:app:{{ org_prefix }}_indexer_volume_indexes]
+stateOnClient = noop
+
+[serverClass:clusterMaster:app:{{ org_prefix }}_cluster_indexer_base]
+stateOnClient = noop
+
+[serverClass:clusterMaster:app:Splunk_TA_nix]
+stateOnClient = noop
+
+#####
+##### Enterprise Cluster Forwarders #####
+#####
+
+[serverClass:clusterForwarders]
+whitelist.0 = {{ stage.splunk_lm_uri | regex_replace(':8089') }}
+whitelist.1 = {{ stage.splunk_ds_uri | regex_replace(':8089') }}
+whitelist.2 = splunk-search*
+blacklist.0 = {{ stage.splunk_master_uri | regex_replace(':8089') }}
+blacklist.1 = ip-{{ stage.splunk_master_ip | regex_replace('(\.)', '-') }}
+blacklist.2 = splunk-indexer*
+
+[serverClass:clusterForwarders:app:{{ org_prefix }}_cluster_forwarder_outputs]
+restartSplunkd = true
+stateOnClient = enabled
+
+#####
+##### All Deployment Client Forwarders #####
+#####
+
+[serverClass:deploymentClientForwarders]
+whitelist.0 = *
+blacklist.0 = {{ stage.splunk_master_uri | regex_replace(':8089') }}
+blacklist.1 = ip-{{ stage.splunk_master_ip | regex_replace('(\.)', '-') }}
+blacklist.2 = {{ stage.splunk_lm_uri | regex_replace(':8089') }}
+blacklist.3 = {{ stage.splunk_ds_uri | regex_replace(':8089') }}
+blacklist.4 = splunk-indexer*
+
+[serverClass:deploymentClientForwarders:app:{{ org_prefix }}_forwarder_outputs]
+restartSplunkd = true
+stateOnClient = enabled
+
+#####
+##### All Search Heads #####
+#####
+
+[serverClass:allSearch]
+whitelist.0 = splunk-search*
+
+#####
+##### All Linux systems #####
+#####
+
+[serverClass:allLinux]
+whitelist.0 = *
+blacklist.0 = {{ stage.splunk_master_uri | regex_replace(':8089') }}
+blacklist.1 = ip-{{ stage.splunk_master_ip | regex_replace('(\.)', '-') }}
+blacklist.2 = splunk-indexer*
+machineTypesFilter = linux-i686, linux-x86_64
+
+[serverClass:allLinux:app:Splunk_TA_nix]
+restartSplunkd = true
+stateOnClient = enabled

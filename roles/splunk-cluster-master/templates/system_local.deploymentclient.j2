@@ -1,0 +1,6 @@
+[deployment-client]
+serverRepositoryLocationPolicy = rejectAlways
+repositoryLocation = $SPLUNK_HOME/etc/master-apps
+
+[target-broker:deploymentServer]
+targetUri = https://{{ stage.splunk_ds_uri }}

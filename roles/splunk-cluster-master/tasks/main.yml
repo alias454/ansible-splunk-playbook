@@ -1,0 +1,69 @@
+---
+# Configure Cluster Master
+- name: Include Secrets
+  include_vars: "./group_vars/secrets/secrets.yml"
+
+# Sets site_env based on the environment variable
+- set_fact: stage="{{ vars[deploy_stage] }}"
+- set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
+  when: use_stage_spec|default(False)
+
+- name: Copy Splunk deploymentclient.conf for system
+  template:
+    src: system_local.deploymentclient.j2
+    dest: "{{ splunk_base }}/etc/system/local/deploymentclient.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  when: use_deployment_server|default(False)
+  notify: restart splunk
+
+- name: Check if clustering is enabled
+  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:{{ stage.splunk_current_admin_password }} | grep 'master_uri:https://127.0.0.1:8089')"
+  become_user: splunk
+  register: cm_clustering_enabled
+  check_mode: no
+  changed_when: False
+  ignore_errors: True
+  no_log: true
+
+- name: Setup Cluster Master
+  shell: "{{ splunk_base }}/bin/splunk edit cluster-config -mode master -replication_factor {{ cluster_replication_factor }} -search_factor {{ cluster_search_factor }} -secret '{{ stage.splunk_cluster_pass4SymmKey }}'"
+  become_user: splunk
+  register: cm_cluster_configured
+  ignore_errors: True
+  when: cm_clustering_enabled.stdout == ""
+  notify: restart splunk
+  no_log: true
+
+- name: Setup Cluster Multisite Master
+  shell: "{{ splunk_base }}/bin/splunk edit cluster-config -mode master -multisite {{ use_multisite_config }} -available_sites {{ available_sites }} -site {{ site }} -site_replication_factor '{{ site_replication_factor }}' -site_search_factor '{{ site_search_factor }}' -cluster_label '{{ cluster_label }}' -secret '{{ stage.splunk_cluster_pass4SymmKey }}'"
+  become_user: splunk
+  register: cm_cluster_configured
+  ignore_errors: True
+  when: cm_clustering_enabled.stdout == "" and use_multisite_config == 'true'
+  notify: restart splunk
+  no_log: true
+
+- name: "Create initial {{ org_prefix }} index apps directories"
+  file:
+    path: "{{ splunk_base }}/etc/apps/{{ item.deployment_app }}/local/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    recurse: yes
+    state: directory
+  with_items:
+    - { deployment_app: '{{ org_prefix }}_cluster_master_base' }
+
+- name: Create Splunk CM server.conf for deployment
+  copy:
+    content: |
+      [indexer_discovery]
+      pass4SymmKey = {{ stage.splunk_cluster_pass4SymmKey }}
+      indexerWeightByDiskCapacity = true
+    dest: "{{ splunk_base }}/etc/apps/{{ org_prefix }}_cluster_master_base/local/server.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  no_log: true

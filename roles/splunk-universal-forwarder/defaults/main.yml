@@ -1,0 +1,36 @@
+---
+# Secrets are stored in the secops folder that you create
+# Create the secrets folder in the ./group_vars/ folder
+
+# Required variables
+# splunk_sslPassword: 'located in secrets file'
+# splunk_pass4SymmKey: 'located in secrets file'
+# splunk_master_uri: 'located in secrets file'
+# splunk_ds_uri: 'located in secrets file'
+
+# Packages
+# Use wget to grab the latest package from splunk.com
+# Place file in roles folder under -> splunk-base/files
+splunk_package_file: 'splunkforwarder-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb'
+splunk_version: '7.1.0'
+splunk_base: '/opt/splunkforwarder'
+
+# Manage apps using a deployment server.
+# http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/Updatepeerconfigurations
+use_deployment_server: 1
+
+# Use Cluster Master as CA
+use_internal_ca: 'true'
+
+# When toggling use_internal_ca setting you may want to use splunk defaults
+use_stage_spec: false
+
+# ca_force_create and ca_force_certify_nodes are designed to prevent overriding of existing certificates !
+ca_force_create: false           # Force creating even if files exist on the node
+ca_force_certify_nodes: false    # Force creating of node certificates
+
+# Where to copy the generated cert files from on the local control machine
+ca_distribution_dir: "{{ playbook_dir }}/group_vars/secrets/certs"
+
+# Disable splunk web by default
+use_splunk_web: 0

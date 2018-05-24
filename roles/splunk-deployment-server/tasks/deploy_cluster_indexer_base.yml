@@ -1,0 +1,56 @@
+---
+# This app deploys cluster_indexer_base input config
+- name: "Create initial {{ org_prefix }}_cluster_indexer_base apps directories"
+  file:
+    path: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_app }}/local/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    recurse: yes
+    state: directory
+  with_items:
+    - { deployment_app: '{{ org_prefix }}_cluster_indexer_base' }
+
+- name: "Copy Splunk {{ org_prefix }}_cluster_indexer_base app.conf for deployment"
+  copy:
+    content: |
+      [install]
+      state = enabled
+
+      [package]
+      check_for_updates = false
+
+      [ui]
+      is_visible = false
+      is_manageable = false
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_cluster_indexer_base/local/app.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  no_log: true
+
+- name: "Copy Splunk {{ org_prefix }}_cluster_indexer_base indexes.conf for deployment"
+  copy:
+    content: |
+      # DEFAULT TO CONFIGURE REPLICATION ON ALL INDEXES
+      [default]
+      repFactor = auto
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_cluster_indexer_base/local/indexes.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  no_log: true
+
+- name: "Copy Splunk {{ org_prefix }}_cluster_indexer_base server.conf for deployment"
+  copy:
+    content: |
+      [sslConfig]
+      sslRootCAPath = {{ stage.ssl.splunk_sslRootCAPath }}
+      sslVersions = tls1.2
+      sslVersionsForClient = tls1.2
+      cipherSuite = TLSv1.2
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_cluster_indexer_base/local/server.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  no_log: true
