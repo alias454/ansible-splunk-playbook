@@ -16,6 +16,7 @@
   when: use_internal_ca|default(False) and ca_force_create|default(False)
   with_items:
     - wildcard-cert-bundle.pem
+    - ca-cert-bundle.pem
   no_log: true
 
 # Copy wildcard host keys and certs to client node
@@ -31,6 +32,16 @@
     - wildcard-priv-key.pem
     - ca-cert.pem
   when: use_deployment_server|default(False) and use_internal_ca|default(False)
+  no_log: true
+
+- name: Generate a CA bundle from appsCA.pem and ca-cert.pem
+  shell: "cat ca-cert.pem {{ splunk_base }}/etc/auth/appsCA.pem > ca-cert-bundle.pem"
+  register: ca_bundle_check
+  args:
+    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    creates: "{{ splunk_base }}/etc/auth/{{ org_name }}/ca-cert-bundle.pem"
+  become_user: splunk
+  when: use_internal_ca|default(False)
   no_log: true
 
 - name: Generate a cert bundle from wildcard artifacts
