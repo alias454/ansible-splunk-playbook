@@ -48,14 +48,21 @@
   when: hash_check.stdout == ""
   no_log: true
 
+- name: Check server.conf file contains current sslPassword hash value
+  shell: "echo $(grep '{{ stage.ssl.splunk_cluster_sslPassword | hash('sha256') }}' {{ splunk_base }}/etc/passwd)"
+  register: sslPassword_hash_check
+  changed_when: False
+  ignore_errors: True
+  no_log: true
+
 - name: Set sslPassword using splunk_cluster_sslPassword
   lineinfile:
     path: "{{ splunk_base }}/etc/system/local/server.conf"
-    line: "sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }}"
+    line: "sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }} #{{ stage.ssl.splunk_cluster_sslPassword | hash('sha256') }}"
     regexp: '^sslPassword = '
     state: present
   ignore_errors: True
-  when: use_internal_ca|default(False) and not bundle_check is skipped
+  when: use_internal_ca|default(False) and not bundle_check is skipped and sslPassword_hash_check.stdout == ""
   no_log: true
 
 - name: Add serverCert to system/local server.conf
