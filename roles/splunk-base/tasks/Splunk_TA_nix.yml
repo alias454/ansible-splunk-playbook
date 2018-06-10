@@ -1,0 +1,33 @@
+---
+# Apps below here are splunkbase apps
+- name: Create Splunkbase app directories for cluster members
+  file:
+    path: "{{ splunk_base }}/etc/apps/{{ item.deployment_app }}/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    state: directory
+  with_items:
+    - { deployment_app: 'Splunk_TA_nix' }
+
+# Download the latest app from Splunkbase and update as needed
+- name: Extract Splunkbase app for cluster members
+  unarchive:
+    src: "apps/{{ item.deployment_tarball }}"
+    dest: "{{ splunk_base }}/etc/apps/"
+    creates: "{{ splunk_base }}/etc/apps/{{ item.deployment_app }}/license-eula.txt"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  with_items:
+    - { deployment_app: 'Splunk_TA_nix', deployment_tarball: 'splunk-add-on-for-unix-and-linux_524.tgz' }
+
+- name: Copy files for Splunkbase app for cluster members
+  copy:
+    src: "apps/{{ item.deployment_app }}/local"
+    dest: "{{ splunk_base }}/etc/apps/{{ item.deployment_app }}"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  with_items:
+    - { deployment_app: 'Splunk_TA_nix' }

@@ -1,0 +1,12 @@
+---
+- name: Copy Splunk deploymentclient.conf for system
+  template:
+    src: system_local.deploymentclient.j2
+    dest: "{{ splunk_base }}/etc/system/local/deploymentclient.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  when:
+    - "'splunk-staging-cm' not in group_names"
+    - use_splunk_web|default(False)
+  notify: restart splunk

@@ -25,6 +25,38 @@
     mode: '0640'
   no_log: true
 
+- name: Copy Splunk outputs.conf for system local
+  copy:
+    content: |
+      [indexAndForward]
+      index = false  # Turn off local indexing for cluster members
+
+      [tcpout]
+      defaultGroup = primary_indexers
+      forwardedindex.filter.disable = true
+      indexAndForward = false
+
+      [tcpout:primary_indexers]
+      indexerDiscovery = clustered_indexers
+      forceTimebasedAutoLB = true
+      autoLBFrequency = 30
+      useACK = true
+      maxQueueSize = 7MB
+
+      clientCert = {{ stage.ssl.splunk_clientCert | regex_replace('(XXXHOSTCERTXXX)', ansible_hostname + '-cert-bundle.pem') }}
+      sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }}
+      sslVerifyServerCert = false
+
+      [indexer_discovery:clustered_indexers]
+      pass4SymmKey = {{ stage.splunk_cluster_pass4SymmKey }}
+      master_uri = https://{{ stage.splunk_master_uri }}
+    dest: "{{ splunk_base }}/etc/system/local/outputs.conf"
+    owner: splunk
+    group: splunk
+    mode: '0640'
+  when: use_splunk_web|default(False)
+  no_log: true
+
 - name: Copy Splunk web.conf for system
   template:
     src: system_local.web.j2
