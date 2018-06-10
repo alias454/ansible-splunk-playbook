@@ -12,4 +12,4 @@ search_site: "site0"
 
 # For more info about roles http://docs.splunk.com/Documentation/Splunk/7.1.0/Admin/authorizeconf
 # To use a custom roles file, create a file in the custom_files folder
-custom_roles_file: 'custom_roles.yml'
+custom_roles_file: 'custom_roles.conf'

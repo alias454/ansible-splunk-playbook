@@ -1,0 +1,35 @@
+---
+# Configure Deployment Server
+
+# Apps below here are splunkbase apps
+- name: Create Splunkbase app directories
+  file:
+    path: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_app }}/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    state: directory
+  with_items:
+    - { deployment_app: 'Splunk_TA_Template' }
+
+# Download the latest app from Splunkbase and update as needed
+- name: Extract Splunkbase app for deployment
+  unarchive:
+    src: "deployment-apps/{{ item.deployment_tarball }}"
+    dest: "{{ splunk_base }}/etc/deployment-apps/"
+    creates: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_app }}/license-eula.txt"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  with_items:
+    - { deployment_app: 'Splunk_TA_Template', deployment_tarball: 'splunk-add-on-for-template-replace-this.tgz' }
+
+#- name: Copy local files for Splunkbase deployment app
+#  copy:
+#    src: "deployment-apps/{{ item.deployment_app }}/local"
+#    dest: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_app }}"
+#    owner: splunk
+#    group: splunk
+#    mode: u=rwX,g=rX,o-rwx
+#  with_items:
+#    - { deployment_app: 'Splunk_TA_Template' }

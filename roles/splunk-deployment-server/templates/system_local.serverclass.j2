@@ -15,24 +15,14 @@ stateOnClient = noop
 [serverClass:clusterMaster:app:{{ org_prefix }}_cluster_indexer_base]
 stateOnClient = noop
 
-[serverClass:clusterMaster:app:Splunk_TA_nix]
+[serverClass:clusterMaster:app:Splunk_TA_windows]
 stateOnClient = noop
 
-#####
-##### Enterprise Cluster Forwarders #####
-#####
+[serverClass:clusterMaster:app:Splunk_TA_sourcefire]
+stateOnClient = noop
 
-[serverClass:clusterForwarders]
-whitelist.0 = {{ stage.splunk_lm_uri | regex_replace(':8089') }}
-whitelist.1 = {{ stage.splunk_ds_uri | regex_replace(':8089') }}
-whitelist.2 = splunk-search*
-blacklist.0 = {{ stage.splunk_master_uri | regex_replace(':8089') }}
-blacklist.1 = ip-{{ stage.splunk_master_ip | regex_replace('(\.)', '-') }}
-blacklist.2 = splunk-indexer*
-
-[serverClass:clusterForwarders:app:{{ org_prefix }}_cluster_forwarder_outputs]
-restartSplunkd = true
-stateOnClient = enabled
+[serverClass:clusterMaster:app:Splunk_TA_f5-bigip]
+stateOnClient = noop
 
 #####
 ##### All Deployment Client Forwarders #####
@@ -44,7 +34,8 @@ blacklist.0 = {{ stage.splunk_master_uri | regex_replace(':8089') }}
 blacklist.1 = ip-{{ stage.splunk_master_ip | regex_replace('(\.)', '-') }}
 blacklist.2 = {{ stage.splunk_lm_uri | regex_replace(':8089') }}
 blacklist.3 = {{ stage.splunk_ds_uri | regex_replace(':8089') }}
-blacklist.4 = splunk-indexer*
+blacklist.4 = splunk-search*
+blacklist.5 = splunk-indexer*
 
 [serverClass:deploymentClientForwarders:app:{{ org_prefix }}_forwarder_outputs]
 restartSplunkd = true
@@ -56,6 +47,14 @@ stateOnClient = enabled
 
 [serverClass:allSearch]
 whitelist.0 = splunk-search*
+
+[serverClass:allSearch:app:{{ org_prefix }}_search_head_volume_indexes]
+restartSplunkd = true
+stateOnClient = enabled
+
+[serverClass:allSearch:app:{{ org_prefix }}_all_indexes]
+restartSplunkd = true
+stateOnClient = enabled
 
 #####
 ##### All Linux systems #####

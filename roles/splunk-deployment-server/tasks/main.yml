@@ -30,9 +30,10 @@
   notify: restart splunk
 
 # Import custom apps
-- import_tasks: deploy_misc_internal_apps.yml
+- import_tasks: deploy_search_head_volume_indexes.yml
+- import_tasks: deploy_indexer_volume_indexes.yml
+- import_tasks: deploy_all_indexes.yml
 - import_tasks: deploy_cluster_indexer_base.yml
-- import_tasks: deploy_cluster_forwarder_outputs.yml
 - import_tasks: deploy_forwarder_outputs.yml
 - import_tasks: deploy_sites.yml
 

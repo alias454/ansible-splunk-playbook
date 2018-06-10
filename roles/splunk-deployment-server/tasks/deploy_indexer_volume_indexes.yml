@@ -1,0 +1,31 @@
+---
+# Configure Deployment Server
+
+# Configure indexes to use with deployment cluster Master.
+# The file will be created on the Deployment server and then pushed to the CM
+# From the CM a process will run to deploy out to the indexers
+# For empty or unset values, the config will skip writing an entry in the conf file
+
+- name: "Create initial {{ org_prefix }} index apps directories"
+  file:
+    path: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_app }}/local/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    recurse: yes
+    state: directory
+  with_items:
+    - { deployment_app: '{{ org_prefix }}_indexer_volume_indexes' }
+
+
+# This app contains maxVolumeDataSizeMB settings
+- name: "Create {{ org_prefix }}_indexer_volume_indexes app for deployment"
+  copy:
+    src: "deployment-apps/org_indexer_volume_indexes/local/{{ item.file }}"
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_indexer_volume_indexes/local/{{ item.file }}"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  with_items:
+    - { file: 'app.conf' }
+    - { file: 'indexes.conf' }

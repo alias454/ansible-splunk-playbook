@@ -15,7 +15,6 @@
     recurse: yes
     state: directory
   with_items:
-    - { deployment_app: '{{ org_prefix }}_indexer_volume_indexes' }
     - { deployment_app: '{{ org_prefix }}_all_indexes' }
 
 # Check all_indexes
@@ -46,18 +45,6 @@
   blockinfile:
     path: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_all_indexes/local/indexes.conf"
     block: "{{ lookup('file', item) }}"
-    insertafter: "###### CUSTOMER INDEXES"
+    insertafter: "###### SPLUNKBASE APP INDEXES"
   with_items:
     - "{{ custom_indexes.stat.path|default('../files/customer_indexes.conf') }}"
-
-# This app contains maxVolumeDataSizeMB settings
-- name: "Create {{ org_prefix }}_indexer_volume_indexes app for deployment"
-  copy:
-    src: "deployment-apps/org_indexer_volume_indexes/local/{{ item.file }}"
-    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_indexer_volume_indexes/local/{{ item.file }}"
-    owner: splunk
-    group: splunk
-    mode: u=rwX,g=rX,o-rwx
-  with_items:
-    - { file: 'app.conf' }
-    - { file: 'indexes.conf' }

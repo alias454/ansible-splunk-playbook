@@ -87,6 +87,10 @@ You **cannot use the deployment server to distribute updates to members of a sea
     │       │   └── local
     │       │       ├── app.conf
     │       │       └── indexes.conf
+    │       ├── org_search_head_volume_indexes
+    │       │   └── local
+    │       │       ├── app.conf
+    │       │       └── indexes.conf
     │       ├── org_site_1_base
     │       │   └── local
     │       │       ├── app.conf
@@ -99,11 +103,12 @@ You **cannot use the deployment server to distribute updates to members of a sea
     ├── handlers
     │   └── main.yml
     ├── tasks
-    │   ├── deploy_Splunk_TA_nix.yml
-    │   ├── deploy_cluster_forwarder_outputs.yml
+    │   ├── deploy_Splunk_TA_Template.yml
+    │   ├── deploy_all_indexes.yml
     │   ├── deploy_cluster_indexer_base.yml
     │   ├── deploy_forwarder_outputs.yml
-    │   ├── deploy_misc_internal_apps.yml
+    │   ├── deploy_indexer_volume_indexes.yml
+    │   ├── deploy_search_head_volume_indexes.yml
     │   ├── deploy_sites.yml
     │   └── main.yml
     └── templates
@@ -143,6 +148,25 @@ path = /coldstorage/splunk
 ```
 
 ---
+**org_search_head_volume_indexes**  
+Manage config settings for:
+  > indexes.conf  
+
+Used to set primary and secondary volumes path values and maxVolumeDataSizeMB for each.  
+The value is derived on a per node basis so make sure all search heads have the same disk configuration.
+
+An example with a 32GB filesystem setting primary volume and secondary volume values. 
+```properties
+[volume:primary]
+maxVolumeDataSizeMB = 8187
+path = /storage/splunk
+
+[volume:secondary]
+maxVolumeDataSizeMB = 21288
+path = /storage/splunk
+```
+
+---
 **org_site_X_base**  
 Manage config settings for:
   > server.conf  
@@ -156,14 +180,6 @@ Manage config settings for:
   > outputs.conf
 
 Setup values for deployment client nodes that forward data into the peer nodes. Sets up the appropriate **tcpout** parameters and **indexer_discovery**.
-
----
-**org_cluster_forwarder_outputs**  
-Manage config settings for:
-  > server.conf  
-  > outputs.conf
-
-Setup values for enterprise cluster nodes that forward data into the peer nodes. Sets up the appropriate **tcpout** parameters and **indexer_discovery**.
 
 ---
 **org_cluster_indexer_base**  
@@ -180,7 +196,6 @@ Splunkbase apps need ot be downloaded prior to using them. Download the tgz file
 Sets custom values to override the **default/inputs.conf** configuration shipped with the app.
 
 ---
-
 ## How does this work?
 
 Once **splunk-base** has been applied, nodes can be configured for individual capabilities based on their inventory group.  
