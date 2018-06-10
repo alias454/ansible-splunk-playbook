@@ -70,7 +70,7 @@
 - name: Set sslPassword using splunk_cluster_sslPassword
   lineinfile:
     path: "{{ splunk_base }}/etc/system/local/server.conf"
-    line: "sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }}" #
+    line: "sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }}"
     regexp: '^sslPassword = '
     state: present
   ignore_errors: True
