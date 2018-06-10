@@ -17,7 +17,6 @@
 
 - name: Remove leftover Splunk artifacts using shell module
   shell: "{{ item }}"
-  ignore_errors: True
   with_items:
     - "rm -f /etc/init.d/splunk"
     - "rm -rf /storage/splunk"

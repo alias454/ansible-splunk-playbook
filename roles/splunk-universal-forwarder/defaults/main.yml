@@ -1,5 +1,5 @@
 ---
-# Secrets are stored in the secops folder that you create
+# Secrets are stored in the secrets folder that you create
 # Create the secrets folder in the ./group_vars/ folder
 
 # Required variables

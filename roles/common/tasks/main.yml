@@ -21,3 +21,13 @@
     name: boto3 awscli python-dateutil
     executable: pip3
   ignore_errors: True
+
+- name: Create 00-PreserveFQDN rsyslog setting file
+  copy:
+    content: |
+      # Log FQDN always
+      $PreserveFQDN on
+    dest: "/etc/rsyslog.d/00-PreserveFQDN.conf"
+    owner: root
+    group: root
+    mode: '0644'
