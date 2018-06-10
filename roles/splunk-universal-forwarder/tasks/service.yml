@@ -16,6 +16,7 @@
     src: splunk.init.j2
     dest: /etc/init.d/splunk
     mode: '0755'
+  notify: reload systemd
 
 - name: Splunk is running
   shell: "{{ splunk_base }}/bin/splunk status"
@@ -49,16 +50,26 @@
   no_log: true
 
 - name: Check server.conf file contains current sslPassword hash value
-  shell: "echo $(grep '{{ stage.ssl.splunk_cluster_sslPassword | hash('sha256') }}' {{ splunk_base }}/etc/passwd)"
+  shell: "echo $(grep '{{ stage.ssl.splunk_cluster_sslPassword | hash('sha256') }}' {{ splunk_base }}/etc/system/local/server.conf)"
   register: sslPassword_hash_check
   changed_when: False
   ignore_errors: True
   no_log: true
 
-- name: Set sslPassword using splunk_cluster_sslPassword
+- name: Set hash comment using splunk_cluster_sslPassword
+  ini_file:
+    path: "{{ splunk_base }}/etc/system/local/server.conf"
+    section: sslConfig
+    option: "#hashCheck"
+    value: "{{ stage.ssl.splunk_cluster_wildcard_sslPassword | hash('sha256') }}"
+  ignore_errors: True
+  when: use_internal_ca|default(False) and not wildcard_bundle_check is skipped and sslPassword_hash_check.stdout == ""
+  no_log: true
+
+- name: Set sslPassword using splunk_cluster_wildcard_sslPassword
   lineinfile:
     path: "{{ splunk_base }}/etc/system/local/server.conf"
-    line: "sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }} #{{ stage.ssl.splunk_cluster_sslPassword | hash('sha256') }}"
+    line: "sslPassword = {{ stage.ssl.splunk_cluster_wildcard_sslPassword }}"
     regexp: '^sslPassword = '
     state: present
   ignore_errors: True
