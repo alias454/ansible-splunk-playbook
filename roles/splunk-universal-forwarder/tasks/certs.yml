@@ -22,7 +22,7 @@
 # Copy wildcard host keys and certs to client node
 - name: "Distribute wildcard-priv-key.pem, wildcard-cert.pem to host"
   copy:
-    src: "{{ ca_distribution_dir }}/{{ item }}"
+    src: "{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}"
     dest: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item }}"
     owner: splunk
     group: splunk

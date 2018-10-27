@@ -8,12 +8,16 @@
 - set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
   when: use_stage_spec|default(False)
 
+# If use_shclustering is true import setup tasks
+- import_tasks: shcluster_setup.yml
+  when: use_shclustering|default(False)
+
 - name: Check for serverclass.conf file
   stat: "path={{ splunk_base }}/etc/system/local/serverclass.conf"
   register: serverclass_file
 
 - name: Enable Deployment Server
-  shell: "{{ splunk_base }}/bin/splunk enable deploy-server -auth admin:{{ stage.splunk_current_admin_password }}"
+  shell: "{{ splunk_base }}/bin/splunk enable deploy-server -auth admin:'{{ stage.splunk_current_admin_password }}'"
   become_user: splunk
   ignore_errors: True
   when: serverclass_file.stat.exists == False
@@ -38,4 +42,4 @@
 - import_tasks: deploy_sites.yml
 
 # Import Splunkbase apps
-- import_tasks: deploy_Splunk_TA_nix.yml
+- import_tasks: deploy_Splunk_Packages.yml

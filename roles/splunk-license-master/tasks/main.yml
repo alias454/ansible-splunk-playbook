@@ -26,7 +26,7 @@
   no_log: true
 
 - name: Check if license already added
-  shell: "echo $({{ splunk_base }}/bin/splunk list licenser-localslave -auth admin:{{ stage.splunk_current_admin_password }} | grep '{{ license_guid_values }}')"
+  shell: "echo $({{ splunk_base }}/bin/splunk list licenser-localslave -auth admin:'{{ stage.splunk_current_admin_password }}' | grep '{{ license_guid_values }}')"
   register: license_check
   become_user: splunk
   check_mode: no
@@ -35,7 +35,7 @@
   no_log: true
 
 - name: Install Splunk Enterprise license key
-  shell: "echo $({{ splunk_base }}/bin/splunk add licenses {{ splunk_base }}/etc/licenses/enterprise/{{ splunk_license_file }} -auth admin:{{ stage.splunk_current_admin_password }})"
+  shell: "echo $({{ splunk_base }}/bin/splunk add licenses {{ splunk_base }}/etc/licenses/enterprise/{{ splunk_license_file }} -auth admin:'{{ stage.splunk_current_admin_password }}')"
   become_user: splunk
   ignore_errors: True
   when: license_check.stdout == ""

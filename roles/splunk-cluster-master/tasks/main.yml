@@ -19,7 +19,7 @@
   notify: restart splunk
 
 - name: Check if clustering is enabled
-  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:{{ stage.splunk_current_admin_password }} | grep 'master_uri:https://127.0.0.1:8089')"
+  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:'{{ stage.splunk_current_admin_password }}' | grep 'master_uri:https://127.0.0.1:8089')"
   become_user: splunk
   register: cm_clustering_enabled
   check_mode: no

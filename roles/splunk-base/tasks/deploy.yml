@@ -27,5 +27,11 @@
   file: dest="{{ item.mount_path }}" owner=splunk group=splunk recurse=yes
   with_items: "{{ disk_mounts }}"
 
+# Fix up perms on filesystem after user and group created
+- name: Fix up perms after splunk user created
+  file: dest="{{ item.mount_path }}" owner=splunk group=splunk recurse=yes
+  with_items: "{{ lvm_mounts }}"
+  when: lvm_mounts is defined
+
 - name: Sets default acl for splunk on /var/log
   shell: setfacl -Rm u:splunk:rX,d:u:splunk:rX /var/log

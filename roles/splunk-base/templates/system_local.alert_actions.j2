@@ -1,5 +1,6 @@
 [email]
 mailserver = {{ stage.splunk_mailserver | default('mail.server.tld') }}
+from = {{ stage.splunk_mailfrom | default('splunk@server.tld') }}
 pdf.header_left = {{ stage.splunk_pdf_header_left | default('none') }}
 pdf.header_right = {{ stage.splunk_pdf_header_right | default('none') }}
 auth_password = {{ stage.splunk_auth_password | default('') }}

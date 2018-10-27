@@ -43,7 +43,7 @@
   no_log: true
 
 - name: Reset Splunk admin password if changed
-  shell: "{{ splunk_base }}/bin/splunk edit user admin -password '{{ stage.splunk_old_admin_password }}' -role admin -auth admin:{{ stage.splunk_current_admin_password }}"
+  shell: "{{ splunk_base }}/bin/splunk edit user admin -password '{{ stage.splunk_current_admin_password }}' -auth admin:'{{ stage.splunk_old_admin_password }}'"
   become_user: splunk
   ignore_errors: True
   when: hash_check.stdout == ""

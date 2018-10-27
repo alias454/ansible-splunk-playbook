@@ -11,8 +11,8 @@
 # Packages
 # Use wget to grab the latest package from splunk.com
 # Place file in roles folder under -> splunk-base/files
-splunk_package_file: 'splunk-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb'
-splunk_version: '7.1.0'
+splunk_package_file: 'splunk-7.1.2-a0c72a66db66-linux-2.6-amd64.deb'
+splunk_version: '7.1.2'
 splunk_base: '/opt/splunk'
 
 # Default disk info (will apply unless overridden by a group_var config)
@@ -32,6 +32,7 @@ deploy_stage: 'default_stage'
 # Set under the appropriate environment variable in the secrets file
 default_stage:
   splunk_mailserver: "mail.server.tld"
+  splunk_mailfrom: "splunkn@domain.tld"
   splunk_pdf_header_left: "none"
   splunk_pdf_header_right: "none"
   splunk_auth_password: ''

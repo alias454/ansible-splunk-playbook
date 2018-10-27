@@ -7,6 +7,6 @@
     group: splunk
     mode: '0640'
   when:
-    - "'splunk-staging-cm' not in group_names"
     - use_splunk_web|default(False)
+    - "'splunk-cm' not in group_names"
   notify: restart splunk

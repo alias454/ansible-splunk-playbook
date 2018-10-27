@@ -9,7 +9,7 @@
   when: use_stage_spec|default(False)
 
 - name: Check if clustering is enabled
-  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:{{ stage.splunk_current_admin_password }} | grep '{{ stage.splunk_master_uri }}')"
+  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:'{{ stage.splunk_current_admin_password }}' | grep '{{ stage.splunk_master_uri }}')"
   become_user: splunk
   register: idx_clustering_enabled
   check_mode: no

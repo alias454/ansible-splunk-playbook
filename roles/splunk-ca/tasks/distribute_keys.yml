@@ -11,7 +11,7 @@
 
 # Copy root CA cert to CA server default cert location
 - name: "Copy cert to {{ ca_default_ssl_certs_dir }}"
-  copy: src="{{ ca_distribution_dir }}/{{ item }}" dest="{{ ca_default_ssl_certs_dir }}/{{ item }}"
+  copy: src="{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}" dest="{{ ca_default_ssl_certs_dir }}/{{ item }}"
   with_items:
     - "{{ ca_cert }}"
   when:
@@ -21,7 +21,7 @@
 
 # Copy root CA keys to CA server default key location
 - name: "Copy keys to {{ ca_default_ssl_key_dir }}"
-  copy: src="{{ ca_distribution_dir }}/{{ item }}" dest="{{ ca_default_ssl_key_dir }}/{{ item }}"
+  copy: src="{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}" dest="{{ ca_default_ssl_key_dir }}/{{ item }}"
   with_items:
     - "{{ ca_key }}"
     - "{{ ca_pub_key }}"
@@ -33,7 +33,7 @@
 # Copy root CA cert to client nodes to add as trusted CA
 - name: "Copy {{ ca_cert }} to {{ ca_certs_dir }}"
   copy:
-    src: "{{ ca_distribution_dir }}/{{ ca_cert }}"
+    src: "{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ ca_cert }}"
     dest: "{{ ca_certs_dir }}/ca-cert.crt"
     owner: root
     group: root
@@ -45,11 +45,11 @@
 
 # Host keys and certs
 - name: "Distribute inventory_hostname-priv-key.pem to inventory_hostname"
-  copy: src="{{ ca_distribution_dir }}/{{ inventory_hostname }}-priv-key.pem" dest="{{ ca_default_ssl_key_dir }}/{{ inventory_hostname }}-priv-key.pem"
+  copy: src="{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ inventory_hostname }}-priv-key.pem" dest="{{ ca_default_ssl_key_dir }}/{{ inventory_hostname }}-priv-key.pem"
   when: ca_distribute_keys|default(False)
   no_log: true
 
 - name: "Distribute inventory_hostname-cert.pem to inventory_hostname"
-  copy: src="{{ ca_distribution_dir }}/{{ inventory_hostname }}-cert.pem" dest="{{ ca_default_ssl_certs_dir }}/{{ inventory_hostname }}-cert.pem"
+  copy: src="{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ inventory_hostname }}-cert.pem" dest="{{ ca_default_ssl_certs_dir }}/{{ inventory_hostname }}-cert.pem"
   when: ca_distribute_keys|default(False)
   no_log: true

@@ -1,15 +1,15 @@
 #------splunk staging--------#
 [splunk-staging-UF]
-splunk-universal-forwarder1
+splunk-staging-universal-forwarder1
 
 [splunk-staging-search]
-splunk-search-head1
-splunk-search-head2
+splunk-staging-search-head1
+splunk-staging-search-head2
 
 [splunk-staging-idx-us]
-splunk-indexer1
-splunk-indexer2
-splunk-indexer3
+splunk-staging-indexer1
+splunk-staging-indexer2
+splunk-staging-indexer3
 
 [splunk-staging-idx-eu]
 # Add eu indexers
@@ -19,13 +19,13 @@ splunk-staging-idx-us
 splunk-staging-idx-eu
 
 [splunk-staging-ds]
-splunk-deployment-server1
+splunk-staging-deployment-server1
 
 [splunk-staging-cm]
-splunk-cluster-master1
+splunk-staging-cluster-master1
 
 [splunk-staging-lm]
-splunk-license-master1
+splunk-staging-license-master1
 
 [splunk-staging:children]
 splunk-staging-search

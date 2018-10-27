@@ -15,15 +15,6 @@ stateOnClient = noop
 [serverClass:clusterMaster:app:{{ org_prefix }}_cluster_indexer_base]
 stateOnClient = noop
 
-[serverClass:clusterMaster:app:Splunk_TA_windows]
-stateOnClient = noop
-
-[serverClass:clusterMaster:app:Splunk_TA_sourcefire]
-stateOnClient = noop
-
-[serverClass:clusterMaster:app:Splunk_TA_f5-bigip]
-stateOnClient = noop
-
 #####
 ##### All Deployment Client Forwarders #####
 #####
@@ -49,11 +40,11 @@ stateOnClient = enabled
 whitelist.0 = splunk-search*
 
 [serverClass:allSearch:app:{{ org_prefix }}_search_head_volume_indexes]
-restartSplunkd = true
+restartSplunkd = false
 stateOnClient = enabled
 
 [serverClass:allSearch:app:{{ org_prefix }}_all_indexes]
-restartSplunkd = true
+restartSplunkd = false
 stateOnClient = enabled
 
 #####

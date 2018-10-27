@@ -14,7 +14,7 @@ When using a search head cluster there may be a need for additional load balance
 1. Configure the Splunk Search Heads after splunk-base has run
     1. Install authorize.conf (checks for custom roles or uses defaults) 
     2. Configure cluster (Multisite or Singlesite)
-    3. TODO: Configure search head clustering (optional)
+    3. Configure search head clustering (optional)
 
 ### The playbook will configure:
   - search-heads
@@ -22,8 +22,8 @@ When using a search head cluster there may be a need for additional load balance
     - splunk-search-heads : Copy Splunk authorize.conf for system
     - splunk-search-heads : Check if clustering is enabled
     - splunk-search-heads : Add Search Heads to Cluster (Multisite or Singlesite)
+    - splunk-search-heads : Configure search head clustering (optional)
     - TODO: Configure distributed search (optional)
-    - TODO: Configure search head clustering (optional)
 
 ### Files included in this role:
 
@@ -52,6 +52,12 @@ Define the base directory where splunk is installed.
 splunk_base: '/opt/splunk'
 ```
 
+Configure usage of a search head cluster.
+```yaml
+# Enable Search Head Clustering
+use_shclustering: false
+```
+
 Define whether or not a multisite cluster will be deployed.
 ```yaml
 # Use multisite or single site cluster config
@@ -70,4 +76,17 @@ If using custom roles, create a file in the secrets directory **group_vars/custo
 # For more info about roles http://docs.splunk.com/Documentation/Splunk/7.1.0/Admin/authorizeconf
 # To use a custom roles file, create a file in the custom_files folder
 custom_roles_file: 'custom_roles.conf'
+```
+
+Example setting for setting up a search head cluster. Settings are created in the secrets.yml
+```yaml
+# Settings are configured in the secrets file
+example_stage:
+  shclustering:
+    splunk_shcluster_captain: 'https://server1.domain.tld:8089'
+    splunk_shclustering_pass4SymmKey: 'somerandomText'
+    splunk_shcluster_label: 'shcluster1'
+    splunk_shcluster_replication_port: '8087'
+    splunk_shcluster_replication_factor: '3'
+    splunk_shcluster_servers_list: 'https://server1.domain.tld:8089,https://server1.domain.tld:8089,https://server1.domain.tld:8089'
 ```

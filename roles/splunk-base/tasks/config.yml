@@ -3,7 +3,7 @@
   copy:
     content: |
       [default]
-      host = $decideOnStartup
+      host = {{ ansible_fqdn }}
 
       # BASE SETTINGS
       [splunktcp-ssl:9997]
@@ -29,7 +29,8 @@
   copy:
     content: |
       [indexAndForward]
-      index = false  # Turn off local indexing for cluster members
+      # Turn off local indexing for cluster members
+      index = false
 
       [tcpout]
       defaultGroup = primary_indexers

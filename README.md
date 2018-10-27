@@ -21,21 +21,27 @@ This playbook deploys configuration changes to setup a Splunk cluster with indep
 - [Role Overview and Purpose splunk-peer-nodes](./roles/splunk-peer-nodes/README.md)
 - [Role Overview and Purpose splunk-universal-forwarder](./roles/splunk-universal-forwarder/README.md)
 
-## Requirements
+## Usage Requirements
 
-Prior to using this playbook there are a few things that should be handled. 
-  - ansible > v2.4 needs to be installed on the control machine
+Prior to using this playbook there are a few things that should be handled.  
+  - Make sure you have completed all the steps to [Setup Ansible on your control machine](../README.md)  
+  - ansible > **v2.5** needs to be installed on the control machine (**you might need to upgrade**)  
   - The servers you intend to deploy Splunk on need to be built and running
   - Configure the inventory file like the **hosts.example** provided with this playbook
-  - Downloaded Splunk package files and placed them in the correct folders (use current versions)
+  - Clone this repo to your local machine
+  - Read the Additional Role README info (all of them)
+  - Downloaded Splunk package files and placed them in the correct folders (**use latest versions if new install**)
     - Splunk
-      - **roles/splunk-base/files/splunk-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb**
+      - **roles/splunk-base/files/splunk-7.x.x-2e75b3406c5b-linux-2.6-amd64.deb**
     - Universal Forwarder
-      - **roles/splunk-universal-forwarder/files/splunkforwarder-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb**
+      - **roles/splunk-universal-forwarder/files/splunkforwarder-7.x.x-2e75b3406c5b-linux-2.6-amd64.deb**
     - Splunk_TA_nix add-on
-      - **roles/splunk-deployment-server/files/deployment-apps/splunk-add-on-for-unix-and-linux_524.tgz**
-  - Specific configurations set in the secrets file.
-    - This file will need to be created at **group_vars/secrets.yml** from the example secrets.example
+      - **roles/splunk-deployment-server/files/deployment-apps/splunk-add-on-for-unix-and-linux_xxx.tgz**
+    - Grab any additional Splunk add-ons that may be in use and store them in the appropriate place
+      - **roles/splunk-deployment-server/files/deployment-apps/**
+  - Setup specific configurations in the secrets folder
+    - Create the secrets file at **group_vars/secrets/secrets.yml** from the example secrets.example
+    - Create the Splunk license file at **group_vars/secrets/Splunk.License.lic** using your Splunk license information
 
 Run this in a test environment first **do not run in production without testing**
 
@@ -47,16 +53,16 @@ If you have additional groups setup in your **/etc/ansible/hosts** file, you can
   >ansible-playbook /path/to/splunk-staging.yml --extra-vars="servers=HOSTGROUP" -u username --become --ask-become-pass (--check)
 
 Extra vars:
-  >servers
-  >lm_servers
-  >ds_servers
-  >cm_servers
-  >search_servers
-  >idx_servers
-  >uf_servers - Only for Universal Forwarder role
+  >servers  
+  >lm_servers  
+  >ds_servers  
+  >cm_servers  
+  >search_servers  
+  >idx_servers  
+  >uf_servers - Only for Universal Forwarder role  
 
-Apply individual roles as needed using **tags** to run specific portions of the playbook.
-  >ansible-playbook /path/to/splunk-staging.yml --tags splunk-staging -u username --become --ask-become-pass (--check)
+Apply individual roles as needed using **tags** to run specific portions of the playbook.  
+  >ansible-playbook /path/to/splunk-staging.yml --tags splunk-staging -u username --become --ask-become-pass (--check)  
 
 ### The playbook will configure:
 - Setup base config on Splunk servers
@@ -123,6 +129,7 @@ Apply individual roles as needed using **tags** to run specific portions of the 
     - Create initial org multisite apps directories
     - Create org_site_X_base apps for deployment
     - Create Splunkbase app directories
+    - Configure deployer for search head cluster (optional)
     - TODO: Additional config for Deployment Server (more apps, serverclass settings etc)
 - Setup config on Splunk Cluster Master
   - splunk-cluster-master:
@@ -138,8 +145,8 @@ Apply individual roles as needed using **tags** to run specific portions of the 
     - Copy Splunk authorize.conf for system
     - Check if clustering is enabled
     - Add Search Heads to cluster (Multisite or Singlesite)
+    - Configure search head clustering (optional)
     - TODO: Configure distributed search (optional)
-    - TODO: Configure search head clustering (optional)
 - Setup config on Splunk Peer Nodes
   - splunk-peer-nodes:
     - Check if clustering is enabled

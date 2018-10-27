@@ -11,7 +11,7 @@
 # Packages
 # Use wget to grab the latest package from splunk.com
 # Place file in roles folder under -> splunk-base/files
-splunk_package_file: 'splunkforwarder-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb'
+splunk_package_file: 'splunkforwarder-7.1.2-a0c72a66db66-linux-2.6-amd64.deb'
 splunk_version: '7.1.0'
 splunk_base: '/opt/splunkforwarder'
 

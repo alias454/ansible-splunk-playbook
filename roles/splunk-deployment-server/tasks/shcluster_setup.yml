@@ -1,0 +1,41 @@
+---
+# Configure Deployment Server
+
+- name: Set shcluster_label using splunk_shcluster_label
+  ini_file:
+    path: "{{ splunk_base }}/etc/system/local/server.conf"
+    section: shclustering
+    option: shcluster_label
+    value: "{{ stage.shclustering.splunk_shcluster_label }}"
+  when: use_shclustering|default(False)
+  notify: restart splunk
+  no_log: true
+
+- name: Check server.conf file contains current shclustering pass4SymmKey hash value
+  shell: "echo $(grep '{{ stage.shclustering.splunk_shclustering_pass4SymmKey | hash('sha256') }}' {{ splunk_base }}/etc/system/local/server.conf)"
+  register: shclustering_pass4SymmKey_hash_check
+  changed_when: False
+  ignore_errors: True
+  when: use_shclustering|default(False)
+  no_log: true
+
+- name: Set hash comment using splunk_shclustering_pass4SymmKey
+  ini_file:
+    path: "{{ splunk_base }}/etc/system/local/server.conf"
+    section: shclustering
+    option: "#hashCheck"
+    value: "{{ stage.shclustering.splunk_shclustering_pass4SymmKey | hash('sha256') }}"
+  ignore_errors: True
+  when: use_shclustering|default(False) and shclustering_pass4SymmKey_hash_check.stdout == ""
+  no_log: true
+
+- name: Set shclustering pass4SymmKey using splunk_shclustering_pass4SymmKey
+  ini_file:
+    path: "{{ splunk_base }}/etc/system/local/server.conf"
+    section: shclustering
+    option: pass4SymmKey
+    value: "{{ stage.shclustering.splunk_shclustering_pass4SymmKey }}"
+  ignore_errors: True
+  when: use_shclustering|default(False) and shclustering_pass4SymmKey_hash_check.stdout == ""
+  notify: restart splunk
+  no_log: true

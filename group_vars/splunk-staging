@@ -3,14 +3,39 @@
 # Specific configuration for global staging
 deploy_stage: "staging"
 
+# Packages
+# Use wget to grab the latest package from splunk.com
+# Place file in roles folder under -> splunk-base/files
+splunk_package_file: 'splunk-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb'
+splunk_version: '7.1.0'
+splunk_base: '/opt/splunk'
+
+# Set storage volume data size for indexers
+# A 5TB primary volume and a 16TB secondary volume.
+idx_primary_maxVolumeDataSizeMB: "5832300"
+idx_primary_path: "/storage/splunk"
+idx_secondary_maxVolumeDataSizeMB: "15562832"
+idx_secondary_path: "/coldstorage/splunk"
+
+# Set storage volume data size for search heads
+# A 32GB filesystem setting primary and secondary volume values
+search_primary_maxVolumeDataSizeMB: "8187"
+search_primary_path: "/storage/splunk"
+search_secondary_maxVolumeDataSizeMB: "21288"
+search_secondary_path: "/storage/splunk"
+
 # alerts action email settings
 #splunk_mailserver: 'located in secrets file'
+#splunk_mailfrom: 'located in secrets file'
 #splunk_maxresults: 'located in secrets file'
 
 # Configure Deployment server for use
 use_deployment_server: 1
 org_prefix: "org"
 org_name: "myOrg"
+
+# Enable Search Head Clustering
+use_shclustering: false
 
 # Use Cluster Master as CA
 use_internal_ca: 'true'
@@ -28,5 +53,6 @@ use_multisite_config: "true" #set to false when not using
 
 # Multisite config options http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/MultisiteCLI
 site: "site1"
+cluster_label: "US_Cluster"
 search_site: "site0"
 available_sites: "site1,site2"

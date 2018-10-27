@@ -47,7 +47,7 @@ You **cannot use the deployment server to distribute updates to members of a sea
     4. Deploy Splunkbase apps and manage them
         - Splunk_TA_nix
         - Others
-2. Setup **Deployer** Server(used for deploying apps to search heads)
+2. Setup **Deployer** Server(used for deploying apps to search heads in a search head cluster)
 
 ### The playbook will configure:
   - deployment-server
@@ -62,7 +62,7 @@ You **cannot use the deployment server to distribute updates to members of a sea
     - splunk-deployment-server : Create forwarder_outputs app for deployment
     - splunk-deployment-server : Create org_site_X_base apps for deployment
     - splunk-deployment-server : Create Splunkbase app directories
-    - TODO: Config for Search Deployer
+    - splunk-deployment-server : Config for Search Deployer
     - TODO: Additional config for Deployment Server (more apps, serverclass settings etc)
 
 ### Files included in this role:
@@ -83,14 +83,6 @@ You **cannot use the deployment server to distribute updates to members of a sea
     │       │       ├── app.conf
     │       │       ├── indexes.conf
     │       │       └── props.conf
-    │       ├── org_indexer_volume_indexes
-    │       │   └── local
-    │       │       ├── app.conf
-    │       │       └── indexes.conf
-    │       ├── org_search_head_volume_indexes
-    │       │   └── local
-    │       │       ├── app.conf
-    │       │       └── indexes.conf
     │       ├── org_site_1_base
     │       │   └── local
     │       │       ├── app.conf
@@ -110,7 +102,8 @@ You **cannot use the deployment server to distribute updates to members of a sea
     │   ├── deploy_indexer_volume_indexes.yml
     │   ├── deploy_search_head_volume_indexes.yml
     │   ├── deploy_sites.yml
-    │   └── main.yml
+    │   ├── main.yml
+    │   └── shcluster_setup.yml
     └── templates
         └── system_local.serverclass.j2
 
@@ -191,7 +184,7 @@ Set **repFactor = auto** in indexes.conf and push sslConfig settings for **sslVe
 
 ---
 **Splunk_TA_nix**
-Splunkbase apps need ot be downloaded prior to using them. Download the tgz file from Splunkbase and save it to the files/ directory.  
+Splunkbase apps need to be downloaded prior to using them. Download the tgz file from Splunkbase and save it to the files/ directory.  
   
 Sets custom values to override the **default/inputs.conf** configuration shipped with the app.
 
@@ -223,6 +216,12 @@ Configure the Deployment Server for app management.
 use_deployment_server: 1
 ```
 
+Configure usage of a search head cluster.
+```yaml
+# Enable Search Head Clustering
+use_shclustering: false
+```
+
 To use a custom indexes file, create a file in the secrets folder.
 ```yaml
 # To use a custom indexes file, create a file in the custom_files folder
@@ -233,6 +232,21 @@ Define whether or not a multisite cluster will be used.
 ```yaml
 # Use multisite or single site cluster config
 use_multisite_config: "true" #set to false when not using
+```
+
+Configure storage volume sizes and paths
+```yaml
+# Set storage volume data size for indexers
+idx_primary_maxVolumeDataSizeMB: "5832300"
+idx_primary_path: "/storage/splunk"
+idx_secondary_maxVolumeDataSizeMB: "15562832"
+idx_secondary_path: "/coldstorage/splunk"
+
+# Set storage volume data size for search heads
+search_primary_maxVolumeDataSizeMB: "8187"
+search_primary_path: "/storage/splunk"
+search_secondary_maxVolumeDataSizeMB: "21288"
+search_secondary_path: "/storage/splunk"
 ```
 
 Defined default stage environment variables that are applicable to this role.

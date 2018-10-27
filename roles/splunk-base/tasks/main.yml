@@ -10,6 +10,7 @@
 
 - import_tasks: kernel.yml
 - import_tasks: mounts.yml
+- import_tasks: lvm_mounts.yml
 - import_tasks: deploy.yml
 - import_tasks: certs.yml
 - import_tasks: config.yml

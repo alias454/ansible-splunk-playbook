@@ -8,12 +8,29 @@ org_name: "myOrg"
 # Configure Deployment server for use
 use_deployment_server: 1
 
+# Enable Search Head Clustering
+use_shclustering: false
+
 # Use multisite or single site cluster config
 #splunk_cluster_pass4SymmKey: 'located in secrets file'
 use_multisite_config: "true" #set to false when not using
 
 # To use a custom indexes file, create a file in the custom_files folder
 custom_indexes_file: "custom_indexes.conf"
+
+# Set storage volume data size for indexers
+# A 5TB primary volume and a 16TB secondary volume.
+idx_primary_maxVolumeDataSizeMB: "5832300"
+idx_primary_path: "/storage/splunk"
+idx_secondary_maxVolumeDataSizeMB: "15562832"
+idx_secondary_path: "/coldstorage/splunk"
+
+# Set storage volume data size for search heads
+# A 32GB filesystem setting primary and secondary volume values
+search_primary_maxVolumeDataSizeMB: "8187"
+search_primary_path: "/storage/splunk"
+search_secondary_maxVolumeDataSizeMB: "21288"
+search_secondary_path: "/storage/splunk"
 
 # Set under the appropriate environment variable in the secrets file
 # splunk certificate paths
@@ -28,3 +45,17 @@ default_stage:
     splunkweb_serverCert: "etc/auth/splunkweb/cert.pem"
     splunkforwarder_clientCert: "$SPLUNK_HOME/etc/auth/server.pem"
     splunkforwarder_sslRootCAPath: "/opt/splunkforwarder/etc/auth/cacert.pem"
+
+# Add list of packages that will be deployed
+#splunk_packages:
+#  - name: Demo Package
+#    status: 'enable' # Options are enable, disable, remove
+#    description: 'link to app'
+#    package:
+#      version: '1.0.0'
+#      deployment_folder: 'folder package will be extracted to'
+#      deployment_tar: 'name of downloaded tgz file'
+#    search_head: 'does this get deployed to the search head? yes|no'
+#    indexer: 'does this get deployed to the indexers? yes|no'
+#    heavy_forwarder: 'does this get deployed to the HF? yes|no'
+#    universal_forwarder: 'does this get deployed to the UF? yes|no'

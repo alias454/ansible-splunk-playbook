@@ -191,6 +191,7 @@ If using the splunk-ca role the ssl path setting should only need the "myOrg" ch
 # Set under the appropriate environment variable in the secrets file
 default_stage:
   splunk_mailserver: "mail.server.tld"
+  splunk_mailfrom: "splunkn@domain.tld"
   splunk_pdf_header_left: "none"
   splunk_pdf_header_right: "none"
   splunk_auth_password: ""

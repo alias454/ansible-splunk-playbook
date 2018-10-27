@@ -44,7 +44,7 @@
   no_log: true
 
 - name: Reset Splunk admin password if changed
-  shell: "{{ splunk_base }}/bin/splunk edit user admin -password '{{ stage.splunk_old_admin_password }}' -role admin -auth admin:{{ stage.splunk_current_admin_password }}"
+  shell: "{{ splunk_base }}/bin/splunk edit user admin -password '{{ stage.splunk_current_admin_password }}' -auth admin:'{{ stage.splunk_old_admin_password }}'"
   become_user: splunk
   ignore_errors: True
   when: hash_check.stdout == ""
@@ -70,7 +70,7 @@
 - name: Set sslPassword using splunk_cluster_sslPassword
   lineinfile:
     path: "{{ splunk_base }}/etc/system/local/server.conf"
-    line: "sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }}"
+    line: "sslPassword = {{ stage.ssl.splunk_cluster_sslPassword }}" #
     regexp: '^sslPassword = '
     state: present
   ignore_errors: True
@@ -102,5 +102,5 @@
     option: master_uri
     value: "https://{{ stage.splunk_lm_uri }}"
   when:
-    - "'splunk-staging-lm' not in group_names"
+    - "('splunk-staging-lm' or 'splunk-lm') not in group_names"
   no_log: true

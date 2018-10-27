@@ -3,6 +3,11 @@
 
 splunk_base: '/opt/splunk'
 
+# Enable Search Head Clustering
+use_shclustering: false
+
+use_splunk_web: true
+
 # Use multisite or single site cluster config
 #splunk_cluster_pass4SymmKey: 'located in secrets file'
 use_multisite_config: "true" #set to false when not using
@@ -13,3 +18,13 @@ search_site: "site0"
 # For more info about roles http://docs.splunk.com/Documentation/Splunk/7.1.0/Admin/authorizeconf
 # To use a custom roles file, create a file in the custom_files folder
 custom_roles_file: 'custom_roles.conf'
+
+# Settings are configured in the secrets file
+#example_stage:
+#  shclustering:
+#    splunk_shcluster_captain: 'https://server1.domain.tld:8089'
+#    splunk_shclustering_pass4SymmKey: 'somerandomText'
+#    splunk_shcluster_label: 'shcluster1'
+#    splunk_shcluster_replication_port: '30337'
+#    splunk_shcluster_replication_factor: '3'
+#    splunk_shcluster_servers_list: 'https://server1.domain.tld:8089,https://server1.domain.tld:8089,https://server1.domain.tld:8089'

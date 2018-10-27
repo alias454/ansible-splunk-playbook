@@ -23,7 +23,7 @@
 # Copy host keys and certs to client node using protected named certs
 - name: "Distribute priv-key.pem, cert.pem, and ca-pubkey.pem to host"
   copy:
-    src: "{{ ca_distribution_dir }}/{{ item }}"
+    src: "{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}"
     dest: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item }}"
     owner: splunk
     group: splunk

@@ -21,16 +21,15 @@
     owner: splunk
     group: splunk
     mode: '0640'
-  when: use_splunk_web|default(False)
   with_items:
     - "{{ custom_roles.stat.path|default('system_local.authorize.conf') }}"
   notify: restart splunk
   tags: custom_splunk_roles
 
 - name: Check if clustering is enabled
-  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:{{ stage.splunk_current_admin_password }} | grep '{{ stage.splunk_master_uri }}')"
+  shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:'{{ stage.splunk_current_admin_password }}' | grep '{{ stage.splunk_master_uri }}')"
   become_user: splunk
-  register: search_clustering_enabled
+  register: clustering_enabled
   check_mode: no
   changed_when: False
   ignore_errors: True
@@ -39,20 +38,48 @@
 - name: Add Search Heads to cluster
   shell: "{{ splunk_base }}/bin/splunk edit cluster-config -mode searchhead -master_uri 'https://{{ stage.splunk_master_uri }}' -secret '{{ stage.splunk_cluster_pass4SymmKey }}'"
   become_user: splunk
-  register: search_cluster_configured
+  register: cluster_configured
   ignore_errors: True
-  when: search_clustering_enabled.stdout == "" and use_multisite_config == 'false'
+  when: clustering_enabled.stdout == "" and use_multisite_config == 'false'
   notify: restart splunk
   no_log: true
 
 - name: Add Search Heads to Multisite cluster
   shell: "{{ splunk_base }}/bin/splunk edit cluster-config -mode searchhead -site {{ search_site }} -master_uri 'https://{{ stage.splunk_master_uri }}' -secret '{{ stage.splunk_cluster_pass4SymmKey }}'"
   become_user: splunk
-  register: search_cluster_configured
+  register: cluster_configured
   ignore_errors: True
-  when: search_clustering_enabled.stdout == "" and use_multisite_config == 'true'
+  when: clustering_enabled.stdout == "" and use_multisite_config == 'true'
   notify: restart splunk
   no_log: true
 
-# TODO: Add Search Head clustering (shclustering) capabilities
+# Configure Search Head Clustering (shclustering) capabilities
 # http://docs.splunk.com/Documentation/Splunk/7.1.0/DistSearch/SHCdeploymentoverview
+
+- name: Check if shclustering is enabled
+  shell: "echo $({{ splunk_base }}/bin/splunk show shcluster-status -auth admin:'{{ stage.splunk_current_admin_password }}' | grep '{{ stage.shclustering.splunk_shcluster_captain }}')"
+  become_user: splunk
+  register: shclustering_enabled
+  check_mode: no
+  changed_when: False
+  ignore_errors: True
+  when: use_shclustering|default(False)
+  no_log: true
+
+- name: Initialize shcluster members
+  shell: "{{ splunk_base }}/bin/splunk init shcluster-config -auth admin:'{{ stage.splunk_current_admin_password }}' -mgmt_uri 'https://{{ ansible_fqdn }}:8089' -replication_port {{ stage.shclustering.splunk_shcluster_replication_port }} -replication_factor {{ stage.shclustering.splunk_shcluster_replication_factor }} -conf_deploy_fetch_url 'https://{{ stage.splunk_ds_uri }}' -secret '{{ stage.shclustering.splunk_shclustering_pass4SymmKey }}' -shcluster_label {{ stage.shclustering.splunk_shcluster_label }}"
+  become_user: splunk
+  register: shcluster_configured
+  ignore_errors: True
+  when: shclustering_enabled.stdout == "" and use_shclustering|default(False)
+  notify: restart splunk
+  no_log: true
+
+- name: Bootstrap shcluster captain
+  shell: "{{ splunk_base }}/bin/splunk bootstrap shcluster-captain -servers_list '{{ stage.shclustering.splunk_shcluster_servers_list }}' -auth admin:'{{ stage.splunk_current_admin_password }}'"
+  become_user: splunk
+  register: shcluster_bootstrapped
+  ignore_errors: True
+  when: ansible_fqdn == stage.shclustering.splunk_shcluster_captain and shclustering_enabled.stdout == "" and use_shclustering|default(False)
+  notify: restart splunk
+  no_log: true
