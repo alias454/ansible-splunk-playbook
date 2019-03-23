@@ -73,28 +73,36 @@ You **cannot use the deployment server to distribute updates to members of a sea
     │   └── main.yml
     ├── files
     │   ├── customer_indexes.conf
-    │   └── deployment-apps
-    │       ├── Splunk_TA_nix
-    │       │   └── local
-    │       │       ├── app.conf
-    │       │       └── inputs.conf
-    │       ├── org_all_indexes
-    │       │   └── local
-    │       │       ├── app.conf
-    │       │       ├── indexes.conf
-    │       │       └── props.conf
-    │       ├── org_site_1_base
-    │       │   └── local
-    │       │       ├── app.conf
-    │       │       └── server.conf
-    │       ├── org_site_2_base
-    │       │   └── local
-    │       │       ├── app.conf
-    │       │       └── server.conf
+    │   ├── deployer-apps
+    │   │   └── slack_alerts
+    │   │       └── local
+    │   │           ├── alert_actions.conf
+    │   │           └── app.conf
+    │   ├── deployment-apps
+    │   │   ├── Splunk_TA_nix
+    │   │   │   └── local
+    │   │   │       ├── app.conf
+    │   │   │       └── inputs.conf
+    │   │   ├── org_all_indexes
+    │   │   │   └── local
+    │   │   │       ├── app.conf
+    │   │   │       ├── indexes.conf
+    │   │   │       └── props.conf
+    │   │   ├── org_site_1_base
+    │   │   │   └── local
+    │   │   │       ├── app.conf
+    │   │   │       └── server.conf
+    │   │   └── org_site_2_base
+    │   │       └── local
+    │   │           ├── app.conf
+    │   │           └── server.conf
+    │   └── packages
+    │       ├── slack-notification-alert_203.tgz
     │       └── splunk-add-on-for-unix-and-linux_524.tgz
     ├── handlers
     │   └── main.yml
     ├── tasks
+    │   ├── deploy_Splunk_Packages.yml
     │   ├── deploy_Splunk_TA_Template.yml
     │   ├── deploy_all_indexes.yml
     │   ├── deploy_cluster_indexer_base.yml
@@ -102,11 +110,11 @@ You **cannot use the deployment server to distribute updates to members of a sea
     │   ├── deploy_indexer_volume_indexes.yml
     │   ├── deploy_search_head_volume_indexes.yml
     │   ├── deploy_sites.yml
+    │   ├── include_deployment_tasks.yml
     │   ├── main.yml
     │   └── shcluster_setup.yml
     └── templates
         └── system_local.serverclass.j2
-
 
 ### Deployed apps for Deployment Server
 

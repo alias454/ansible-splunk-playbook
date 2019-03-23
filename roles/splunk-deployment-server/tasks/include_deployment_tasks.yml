@@ -1,0 +1,52 @@
+---
+- name: Check {{ org_prefix }}_version.txt for {{ item.deployment_folder }}
+  shell: "echo $(grep 'version' {{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/{{ org_prefix }}_version.txt |cut -d'=' -f2)"
+  register: ver_check
+  changed_when: ver_check.stdout != item.version
+
+- name: Remove old Splunkbase app {{ item.deployment_folder }}
+  file:
+    path: "{{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/"
+    state: absent
+  when: ver_check.stdout != item.version
+
+- name: Extract Splunkbase app {{ item.deployment_folder }} for {{ deploy_type }}
+  unarchive:
+    src: "packages/{{ item.deployment_tar }}"
+    dest: "{{ splunk_base }}/etc/{{ deploy_dir }}/"
+    creates: "{{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+
+- name: Set app version for {{ item.deployment_folder }} in {{ org_prefix }}_version.txt
+  ini_file:
+    path: "{{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/{{ org_prefix }}_version.txt"
+    section: app
+    option: "version"
+    value: "{{ item.version }}"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+
+- name: Check local app content for {{ item.deployment_folder }}
+  local_action: "stat path=./roles/splunk-deployment-server/files/{{ deploy_type }}-apps/{{ item.deployment_folder }}/local"
+  register: local_app_content
+  become: no
+
+- name: Copy local files for Splunkbase {{ deploy_type }} app {{ item.deployment_folder }}
+  copy:
+    src: "{{ deploy_type }}-apps/{{ item.deployment_folder }}/local"
+    dest: "{{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  when: local_app_content.stat.exists
+
+- name: Set Splunkbase app directory permissions for {{ deploy_type }} package {{ item.deployment_folder }}
+  file:
+    path: "{{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    state: directory

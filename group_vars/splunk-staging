@@ -6,8 +6,8 @@ deploy_stage: "staging"
 # Packages
 # Use wget to grab the latest package from splunk.com
 # Place file in roles folder under -> splunk-base/files
-splunk_package_file: 'splunk-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb'
-splunk_version: '7.1.0'
+splunk_package_file: 'splunk-7.2.5-088f49762779-linux-2.6-amd64.deb'
+splunk_version: '7.2.5'
 splunk_base: '/opt/splunk'
 
 # Set storage volume data size for indexers

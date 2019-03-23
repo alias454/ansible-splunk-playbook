@@ -3,9 +3,9 @@
 - name: Setup base config on Splunk servers
   hosts: "{{ servers | default('splunk-staging') }}"
   roles:
-    - { role: common, tags: common }
-    - { role: splunk-ca, tags: splunk-ca }
-    - { role: splunk-base, tags: splunk-base }
+    - { role: common, tags: ['common', 'common-base'] }
+    - { role: splunk-ca, tags: ['splunk-ca', 'common-base'] }
+    - { role: splunk-base, tags: ['splunk-base', 'common-base'] }
 
 # Install license on the License Master
 - name: Setup config on Splunk License Master

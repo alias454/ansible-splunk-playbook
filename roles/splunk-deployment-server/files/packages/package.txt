@@ -1,0 +1,2 @@
+Place splunkbase tar file in here for deployment to the appropriate nodes.
+Once an app has been placed in this folder, add an entry to ./group_vars/custom/files/custom_packages.yml file

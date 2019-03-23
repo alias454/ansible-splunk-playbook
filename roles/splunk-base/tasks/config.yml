@@ -70,6 +70,7 @@
   template:
     src: system_local.authentication.j2
     dest: "{{ splunk_base }}/etc/system/local/authentication.conf"
+    force: no
     owner: splunk
     group: splunk
     mode: '0640'

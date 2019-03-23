@@ -1,0 +1,6 @@
+When deploying apps you can set local configs to automatically get redeployed when an app is upgrade.
+Create the appropriate file structure like
+app_name
+  local
+    app.conf
+    additional app config.conf like indexes, props, macros etc

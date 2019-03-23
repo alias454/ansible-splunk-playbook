@@ -14,12 +14,14 @@
     mode: u=rwX,g=rX,o-rwx
     recurse: yes
     state: directory
+  tags: deploy_indexes
   with_items:
     - { deployment_app: '{{ org_prefix }}_all_indexes' }
 
 # Check all_indexes
 - name: "Check for {{ org_prefix }}_all_indexes indexes.conf file"
   stat: "path={{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_all_indexes/local/indexes.conf"
+  tags: deploy_indexes
   register: all_indexes_file
 
 # This app contains all index names and config and props.conf
@@ -31,6 +33,7 @@
     group: splunk
     mode: u=rwX,g=rX,o-rwx
   when: all_indexes_file.stat.exists == False
+  tags: deploy_indexes
   with_items:
     - { file: 'app.conf' }
     - { file: 'props.conf' }
@@ -39,6 +42,7 @@
 - name: Check for custom indexes file
   local_action: "stat path=./group_vars/custom_files/{{ custom_indexes_file }}"
   register: custom_indexes
+  tags: deploy_indexes
   become: no
 
 - name: Add mappings to all_indexes file for deployment
@@ -46,5 +50,7 @@
     path: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_all_indexes/local/indexes.conf"
     block: "{{ lookup('file', item) }}"
     insertafter: "###### SPLUNKBASE APP INDEXES"
+  tags: deploy_indexes
   with_items:
     - "{{ custom_indexes.stat.path|default('../files/customer_indexes.conf') }}"
+  notify: restart splunk

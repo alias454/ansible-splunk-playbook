@@ -2,24 +2,30 @@
 # Installing common packages with one task
 - name: install required packages using the apt module
   apt:
-    name: "{{ item }}"
+    name: "{{ packages }}"
     update_cache: yes
-  with_items:
-    - 'python3'
-    - 'python3-openssl'
-    - 'python3-pip'
-    - 'python-pip'
-    - 'python-openssl'
-    - 'vim-nox'
-    - 'tmux'
-    - 'nmap'
-    - 'tree'
+    cache_valid_time: 3600
+  vars:
+    packages:
+      - 'python3'
+      - 'python3-openssl'
+      - 'python3-pip'
+      - 'python-pip'
+      - 'python-openssl'
+      - 'vim-nox'
+      - 'tmux'
+      - 'tree'
   ignore_errors: True
 
 - name: Install common utils using Pip
   pip:
-    name: boto3 awscli python-dateutil
+    name: "{{ pip_packages }}"
     executable: pip3
+  vars:
+    pip_packages:
+      - 'boto3'
+      - 'awscli'
+      - 'python-dateutil'
   ignore_errors: True
 
 - name: Create 00-PreserveFQDN rsyslog setting file

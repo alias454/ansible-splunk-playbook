@@ -1,0 +1,39 @@
+---
+# Add list of packages that will be deployed
+#splunk_packages:
+#  - name: Demo Package
+#    status: 'enable' # Options are enable, disable, remove
+#    description: 'link to app'
+#    package:
+#      version: '1.0.0'
+#      deployment_folder: 'folder package will be extracted to'
+#      deployment_tar: 'name of downloaded tgz file'
+#    search_head: 'does this get deployed to the search head? yes|no'
+#    indexer: 'does this get deployed to the indexers? yes|no'
+#    heavy_forwarder: 'does this get deployed to the HF? yes|no'
+#    universal_forwarder: 'does this get deployed to the UF? yes|no'
+
+# Example:
+#splunk_packages:
+#  - name: Splunk App for Unix
+#    status: 'enable' # Options are enable, disable, remove
+#    description: 'https://splunkbase.splunk.com/app/273/'
+#    package:
+#      version: '5.2.5'
+#      deployment_folder: 'splunk_app_for_nix'
+#      deployment_tar: 'splunk-app-for-unix-and-linux_525.tgz'
+#    search_head: 'yes'
+#    indexer: 'no'
+#    heavy_forwarder: 'no'
+#    universal_forwarder: 'no'
+#  - name: Splunk Add-on for Unix and Linux
+#    status: 'enable' # Options are enable, disable, remove
+#    description: 'https://splunkbase.splunk.com/app/833/'
+#    package:
+#      version: '5.2.4'
+#      deployment_folder: 'Splunk_TA_nix'
+#      deployment_tar: 'splunk-add-on-for-unix-and-linux_524.tgz'
+#    search_head: 'no' # Setting yes here will cause error since already deployed via another means
+#    indexer: 'yes'
+#    heavy_forwarder: 'yes'
+#    universal_forwarder: 'yes'

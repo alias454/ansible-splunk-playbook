@@ -12,7 +12,7 @@
     universal_forwarder_packages: "{{ splunk_packages | selectattr('universal_forwarder', 'equalto', 'yes') | map(attribute='package') | list }}"
     deployer_packages: "{{ splunk_packages | selectattr('search_head', 'equalto', 'yes') | map(attribute='package') | list }}"
 
-- name: Set deployment_packages merged list when SH Clustering enakled
+- name: Set deployment_packages merged list when SH Clustering enabled
   set_fact:
     deployment_packages: "{{ indexer_packages | default([]) }} + {{ heavy_forwarder_packages | default([]) }} + {{ universal_forwarder_packages | default([]) }}"
   when: use_shclustering|default(False)
@@ -22,52 +22,17 @@
     deployment_packages: "{{ indexer_packages | default([]) }} + {{ heavy_forwarder_packages | default([]) }} + {{ universal_forwarder_packages | default([]) }} + {{ deployer_packages | default([]) }}"
   when: not use_shclustering|default(False)
 
-- name: Extract Splunkbase app for deployment
-  unarchive:
-    src: "packages/{{ item.deployment_tar }}"
-    dest: "{{ splunk_base }}/etc/deployment-apps/"
-    creates: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_folder }}/"
-    owner: splunk
-    group: splunk
-    mode: u=rwX,g=rX,o-rwx
+# Configure deployment apps
+- include_tasks: include_deployment_tasks.yml
+  vars:
+    deploy_dir: "deployment-apps"
+    deploy_type: "deployment"
   loop: "{{ deployment_packages }}"
 
-#- name: Copy local files for Splunkbase deployment app
-#  copy:
-#    src: "deployment-apps/{{ item.deployment_folder }}/local"
-#    dest: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_folder }}"
-#    owner: splunk
-#    group: splunk
-#    mode: u=rwX,g=rX,o-rwx
-#  loop: "{{ deployment_packages }}"
-
-- name: Create Splunkbase app directories for deployment packages
-  file:
-    path: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_folder }}/"
-    owner: splunk
-    group: splunk
-    mode: u=rwX,g=rX,o-rwx
-    state: directory
-  loop: "{{ deployment_packages }}"
-
-# Configure Deployer Apps if Search Head Clustering is enabled
-- name: Extract Splunkbase app for deployer client
-  unarchive:
-    src: "packages/{{ item.deployment_tar }}"
-    dest: "{{ splunk_base }}/etc/shcluster/apps/"
-    creates: "{{ splunk_base }}/etc/shcluster/apps/{{ item.deployment_folder }}/"
-    owner: splunk
-    group: splunk
-    mode: u=rwX,g=rX,o-rwx
-  loop: "{{ deployer_packages }}"
-  when: use_shclustering|default(False)
-
-- name: Create Splunkbase app directories for deployer packages
-  file:
-    path: "{{ splunk_base }}/etc/shcluster/apps/{{ item.deployment_folder }}/"
-    owner: splunk
-    group: splunk
-    mode: u=rwX,g=rX,o-rwx
-    state: directory
+# Configure deployer apps if Search Head Clustering is enabled
+- include_tasks: include_deployment_tasks.yml
+  vars:
+    deploy_dir: "shcluster/apps"
+    deploy_type: "deployer"
   loop: "{{ deployer_packages }}"
   when: use_shclustering|default(False)
