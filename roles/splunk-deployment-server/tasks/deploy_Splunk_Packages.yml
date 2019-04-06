@@ -27,12 +27,12 @@
   vars:
     deploy_dir: "deployment-apps"
     deploy_type: "deployment"
-  loop: "{{ deployment_packages }}"
+  loop: "{{ deployment_packages | unique }}"
 
 # Configure deployer apps if Search Head Clustering is enabled
 - include_tasks: include_deployment_tasks.yml
   vars:
     deploy_dir: "shcluster/apps"
     deploy_type: "deployer"
-  loop: "{{ deployer_packages }}"
+  loop: "{{ deployer_packages | unique }}"
   when: use_shclustering|default(False)

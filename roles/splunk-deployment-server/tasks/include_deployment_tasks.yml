@@ -1,14 +1,20 @@
 ---
+- name: Check for version.txt file
+  stat: "path={{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/{{ org_prefix }}_version.txt"
+  register: version_file_check
+
 - name: Check {{ org_prefix }}_version.txt for {{ item.deployment_folder }}
   shell: "echo $(grep 'version' {{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/{{ org_prefix }}_version.txt |cut -d'=' -f2)"
   register: ver_check
   changed_when: ver_check.stdout != item.version
+  when: version_file_check.stat.exists == True
 
 - name: Remove old Splunkbase app {{ item.deployment_folder }}
   file:
     path: "{{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/"
     state: absent
-  when: ver_check.stdout != item.version
+  ignore_errors: True
+  when: ver_check.stdout != item.version and version_file_check.stat.exists == True
 
 - name: Extract Splunkbase app {{ item.deployment_folder }} for {{ deploy_type }}
   unarchive:
