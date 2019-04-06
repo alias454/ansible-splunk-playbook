@@ -1,22 +1,22 @@
 ---
 - name: Accept Splunk license
-  shell: "{{ splunk_base }}/bin/splunk start --accept-license --no-prompt creates={{ splunk_base }}/etc/users/splunk-system-user"
+  shell: "{{ splunk_base }}/bin/splunk start --accept-license --no-prompt creates={{ splunk_base }}/var/lib/splunk"
   become_user: splunk
   changed_when: False
   when: splunk_version_check is succeeded
-  notify: restart splunk
+  notify: "{{ notify_task }}"
 
 - name: Setup Splunk to start at boot with splunk user
-  shell: "{{ splunk_base }}/bin/splunk enable boot-start -user splunk creates=/etc/init.d/splunk"
+  shell: "{{ splunk_base }}/bin/splunk enable boot-start -user splunk creates={{ service_file }}"
   when: splunk_installed is succeeded
-  notify: restart splunk
+  notify: "{{ notify_task }}"
 
-- name: Copy Splunk init for service
+- name: Copy Splunk startup file for service
   template:
-    src: splunk.init.j2
-    dest: /etc/init.d/splunk
+    src: "{{ tpl_src }}"
+    dest: "{{ tpl_dest }}"
     mode: '0755'
-  notify: reload systemd
+  notify: "{{ notify_task }}"
 
 - name: Splunk is running
   shell: "{{ splunk_base }}/bin/splunk status"
@@ -25,6 +25,12 @@
   check_mode: no
   ignore_errors: True
   when: splunk_path.stat.exists
+
+- debug:
+    msg: "Start service if SplunkForwarder not running"
+  changed_when: True
+  when: splunk_running.stdout == "splunkd is not running."
+  notify: "{{ notify_task }}"
 
 - name: return hash value for admin password
   shell: "python3 -c \"import crypt; print(crypt.crypt('{{ stage.splunk_current_admin_password }}','$(grep admin {{ splunk_base }}/etc/passwd |awk '{print \"$6$\" $5 \"$\"}' FS=[:$])'))\""
@@ -74,7 +80,7 @@
     state: present
   ignore_errors: True
   when: use_internal_ca|default(False) and not wildcard_bundle_check is skipped and sslPassword_hash_check.stdout == ""
-  notify: restart splunk
+  notify: "{{ notify_task }}"
   no_log: true
 
 - name: Add serverCert to system/local server.conf

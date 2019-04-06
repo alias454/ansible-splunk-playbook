@@ -7,4 +7,4 @@
     group: splunk
     mode: '0640'
   when: use_deployment_server|default(False)
-  notify: restart splunk
+  notify: "{{ notify_task }}"

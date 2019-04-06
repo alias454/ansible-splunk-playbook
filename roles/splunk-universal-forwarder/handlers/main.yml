@@ -1,6 +1,11 @@
 ---
-- name: restart splunk
+- name: restart splunk service
   service: name=splunk state=restarted
+  when: ansible_service_mgr != "systemd"'
 
-- name: reload systemd
-  command: systemctl daemon-reload
+- name: restart splunk systemd
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: SplunkForwarder
+  when: ansible_service_mgr == "systemd"

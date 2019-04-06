@@ -63,6 +63,7 @@ They can parse data before forwarding it to the receiving indexer, store indexed
     │   └── service.yml
     └── templates
         ├── splunk.init.j2
+        ├── splunk.service.j2
         ├── system_local.deploymentclient.j2
         └── system_local.web.j2
 
