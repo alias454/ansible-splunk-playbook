@@ -23,15 +23,15 @@
 # Copy host keys and certs to client node using protected named certs
 - name: "Distribute priv-key.pem, cert.pem, and ca-pubkey.pem to host"
   copy:
-    src: "{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}"
-    dest: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item }}"
+    src: "{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item.src }}"
+    dest: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item.dest }}"
     owner: splunk
     group: splunk
     mode: '0600'
   with_items:
-    - "{{ ansible_hostname }}-priv-key.pem"
-    - "{{ ansible_hostname }}-cert.pem"
-    - ca-cert.pem
+    - { src: "{{ inventory_hostname }}-priv-key.pem", dest: "{{ ansible_hostname }}-priv-key.pem" }
+    - { src: "{{ inventory_hostname }}-cert.pem", dest: "{{ ansible_hostname }}-cert.pem" }
+    - { src: "ca-cert.pem", dest: "ca-cert.pem" }
   no_log: true
 
 - name: Generate a cert bundle from artifacts
