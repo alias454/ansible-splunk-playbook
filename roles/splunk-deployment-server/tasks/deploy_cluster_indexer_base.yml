@@ -35,6 +35,7 @@
       # DEFAULT TO CONFIGURE REPLICATION ON ALL INDEXES
       [default]
       repFactor = auto
+      tsidxWritingLevel = 2
     dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_cluster_indexer_base/local/indexes.conf"
     owner: splunk
     group: splunk
