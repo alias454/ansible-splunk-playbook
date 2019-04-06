@@ -35,3 +35,14 @@
 
 - name: Sets default acl for splunk on /var/log
   shell: setfacl -Rm u:splunk:rX,d:u:splunk:rX /var/log
+
+- name: Add sudoers config to allow service restarts as splunk user
+  copy:
+    content: |
+      %splunk ALL = (root) NOPASSWD: /bin/systemctl start Splunkd.service
+      %splunk ALL = (root) NOPASSWD: /bin/systemctl stop Splunkd.service
+      %splunk ALL = (root) NOPASSWD: /bin/systemctl restart Splunkd.service
+    dest: "/etc/sudoers.d/splunk"
+    owner: root
+    group: root
+    mode: '0440'

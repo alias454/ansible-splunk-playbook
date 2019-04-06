@@ -53,4 +53,4 @@
   tags: deploy_indexes
   with_items:
     - "{{ custom_indexes.stat.path|default('../files/customer_indexes.conf') }}"
-  notify: restart splunk
+  notify: "{{ notify_task }}"

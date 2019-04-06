@@ -8,7 +8,7 @@
     option: shcluster_label
     value: "{{ stage.shclustering.splunk_shcluster_label }}"
   when: use_shclustering|default(False)
-  notify: restart splunk
+  notify: "{{ notify_task }}"
   no_log: true
 
 - name: Check server.conf file contains current shclustering pass4SymmKey hash value
@@ -37,5 +37,5 @@
     value: "{{ stage.shclustering.splunk_shclustering_pass4SymmKey }}"
   ignore_errors: True
   when: use_shclustering|default(False) and shclustering_pass4SymmKey_hash_check.stdout == ""
-  notify: restart splunk
+  notify: "{{ notify_task }}"
   no_log: true

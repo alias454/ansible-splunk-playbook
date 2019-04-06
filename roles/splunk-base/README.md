@@ -135,6 +135,7 @@ server optimizations, directory structures, installs splunk, deploys certificate
     │   └── service.yml
     └── templates
         ├── splunk.init.j2
+        ├── splunk.service.j2
         ├── system_local.alert_actions.j2
         ├── system_local.authentication.j2
         └── system_local.web.j2

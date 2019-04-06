@@ -8,6 +8,16 @@
 - set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
   when: use_stage_spec|default(False)
 
+- name: Set facts for systemd servers
+  set_fact:
+    notify_task: "restart splunk systemd"
+  when: ansible_service_mgr == "systemd"
+
+- name: Set facts for non systemd servers
+  set_fact:
+    notify_task: "restart splunk service"
+  when: ansible_service_mgr != "systemd"
+
 - name: Check if clustering is enabled
   shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:'{{ stage.splunk_current_admin_password }}' | grep '{{ stage.splunk_master_uri }}')"
   become_user: splunk
@@ -23,7 +33,7 @@
   register: idx_cluster_configured
   ignore_errors: True
   when: idx_clustering_enabled.stdout == "" and use_multisite_config == 'false'
-  notify: restart splunk
+  notify: "{{ notify_task }}"
   no_log: true
 
 - name: Add Peer Nodes to Multisite cluster
@@ -32,7 +42,7 @@
   register: idx_cluster_configured
   ignore_errors: True
   when: idx_clustering_enabled.stdout == "" and use_multisite_config == 'true'
-  notify: restart splunk
+  notify: "{{ notify_task }}"
   no_log: true
 
 #- name: Set default data store

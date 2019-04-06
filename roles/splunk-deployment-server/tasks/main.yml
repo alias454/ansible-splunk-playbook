@@ -12,6 +12,16 @@
   tags: deploy_indexes
   when: use_stage_spec|default(False)
 
+- name: Set facts for systemd servers
+  set_fact:
+    notify_task: "restart splunk systemd"
+  when: ansible_service_mgr == "systemd"
+
+- name: Set facts for non systemd servers
+  set_fact:
+    notify_task: "restart splunk service"
+  when: ansible_service_mgr != "systemd"
+
 # If use_shclustering is true import setup tasks
 - import_tasks: shcluster_setup.yml
   when: use_shclustering|default(False)
@@ -25,7 +35,7 @@
   become_user: splunk
   ignore_errors: True
   when: serverclass_file.stat.exists == False
-  notify: restart splunk
+  notify: "{{ notify_task }}"
   no_log: true
 
 - name: Create serverclass.conf to local system
@@ -35,7 +45,7 @@
     owner: splunk
     group: splunk
     mode: '0640'
-  notify: restart splunk
+  notify: "{{ notify_task }}"
 
 # Import custom apps
 - import_tasks: deploy_search_head_volume_indexes.yml
@@ -43,6 +53,7 @@
 - import_tasks: deploy_all_indexes.yml
 - import_tasks: deploy_cluster_indexer_base.yml
 - import_tasks: deploy_forwarder_outputs.yml
+- import_tasks: deploy_secvtools_syslog_inputs.yml
 - import_tasks: deploy_sites.yml
 
 # Import Splunkbase apps

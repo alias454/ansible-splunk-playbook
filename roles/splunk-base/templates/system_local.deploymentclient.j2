@@ -1,7 +1,13 @@
+{%- if 'splunk-cm' in group_names or 'splunk-staging-cm' in group_names %}
+[deployment-client]
+serverRepositoryLocationPolicy = rejectAlways
+repositoryLocation = $SPLUNK_HOME/etc/master-apps
+{% else -%}
 [deployment-client]
 # Set the phoneHome at the end of the PS engagement
 # 10 minutes
 # phoneHomeIntervalInSecs = 600
+{% endif %}
 
 [target-broker:deploymentServer]
 targetUri = https://{{ stage.splunk_ds_uri }}

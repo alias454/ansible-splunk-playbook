@@ -6,6 +6,5 @@
     owner: splunk
     group: splunk
     mode: '0640'
-  when: (use_splunk_web|default(False) and "'splunk-cm' not in group_names") or
-        (use_splunk_web|default(False) and "'splunk-staging-cm' not in group_names")
-  notify: restart splunk
+  when: use_splunk_web|default(False)
+  notify: "{{ notify_task }}"

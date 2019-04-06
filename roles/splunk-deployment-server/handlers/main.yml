@@ -1,3 +1,11 @@
 ---
-- name: restart splunk
+- name: restart splunk service
   service: name=splunk state=restarted
+  when: ansible_service_mgr != "systemd"'
+
+- name: restart splunk systemd
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: Splunkd
+  when: ansible_service_mgr == "systemd"
