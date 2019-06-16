@@ -7,14 +7,13 @@
   shell: "echo $(grep 'version' {{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/{{ org_prefix }}_version.txt |cut -d'=' -f2)"
   register: ver_check
   changed_when: ver_check.stdout != item.version
-  when: version_file_check.stat.exists == True
 
 - name: Remove old Splunkbase app {{ item.deployment_folder }}
   file:
     path: "{{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/"
     state: absent
   ignore_errors: True
-  when: ver_check.stdout != item.version and version_file_check.stat.exists == True
+  when: ver_check.stdout != item.version
 
 - name: Extract Splunkbase app {{ item.deployment_folder }} for {{ deploy_type }}
   unarchive:
@@ -56,3 +55,7 @@
     group: splunk
     mode: u=rwX,g=rX,o-rwx
     state: directory
+
+- name: Find .sh files and make sure they are executable using find
+  shell: "find {{ splunk_base }}/etc/{{ deploy_dir }}/{{ item.deployment_folder }}/ -type f -name *.sh -exec chmod 750 {} \\;"
+  when: ver_check.stdout != item.version

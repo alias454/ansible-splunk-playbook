@@ -24,7 +24,7 @@
   changed_when: False
   check_mode: no
   ignore_errors: True
-  when: splunk_path.stat.exists
+  when: splunk_path.stat.exists or splunk_installed is succeeded
 
 - debug:
     msg: "Start service if SplunkForwarder not running"
