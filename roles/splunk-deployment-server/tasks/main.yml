@@ -7,7 +7,7 @@
 # Sets stage based on the deploy_stage environment variable
 - set_fact: stage="{{ vars[deploy_stage] }}"
   tags: deploy_indexes
-
+  
 - set_fact: stage="{{ stage|combine(stage_spec,recursive=True) }}"
   tags: deploy_indexes
   when: use_stage_spec|default(False)
@@ -15,11 +15,13 @@
 - name: Set facts for systemd servers
   set_fact:
     notify_task: "restart splunk systemd"
+  tags: deploy_indexes
   when: ansible_service_mgr == "systemd"
 
 - name: Set facts for non systemd servers
   set_fact:
     notify_task: "restart splunk service"
+  tags: deploy_indexes
   when: ansible_service_mgr != "systemd"
 
 # If use_shclustering is true import setup tasks
@@ -48,11 +50,13 @@
   notify: "{{ notify_task }}"
 
 # Import custom apps
+- import_tasks: deploy_forwarder_volume_indexes.yml
 - import_tasks: deploy_search_head_volume_indexes.yml
 - import_tasks: deploy_indexer_volume_indexes.yml
 - import_tasks: deploy_all_indexes.yml
 - import_tasks: deploy_cluster_indexer_base.yml
 - import_tasks: deploy_forwarder_outputs.yml
+- import_tasks: deploy_heavy_forwarder_outputs.yml
 - import_tasks: deploy_secvtools_syslog_inputs.yml
 - import_tasks: deploy_sites.yml
 

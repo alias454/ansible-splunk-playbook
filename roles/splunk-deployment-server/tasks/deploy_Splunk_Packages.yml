@@ -2,8 +2,17 @@
 # Configure Deployment Server
 # Download the latest apps from Splunkbase and update splunk_packages as needed
 
-- name: Include Package List
+- name: Include Custom Package List
   include_vars: "./group_vars/custom_files/custom_packages.yml"
+
+- name: Check local Custom {{ org_prefix }} Package List
+  local_action: "stat path=./roles/splunk-deployment-server/files/packages/{{ org_prefix }}_custom_packages.yml"
+  register: local_custom_package_content
+  become: no
+
+- name: Include Custom {{ org_prefix }} Package List
+  include_vars: "./roles/splunk-deployment-server/files/packages/{{ org_prefix }}_custom_packages.yml"
+  when: local_custom_package_content.stat.exists
 
 - name: Set deployment folder value
   set_fact:

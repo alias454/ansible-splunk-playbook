@@ -1,0 +1,73 @@
+---
+# This app enables indexer_discovery on the forwarder client.
+# Indexer discovery is enabled in CM playbook
+- name: "Create initial {{ org_prefix }}_heavy_forwarder_outputs apps directories"
+  file:
+    path: "{{ splunk_base }}/etc/deployment-apps/{{ item.deployment_app }}/local/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    recurse: yes
+    state: directory
+  with_items:
+    - { deployment_app: '{{ org_prefix }}_heavy_forwarder_outputs' }
+
+- name: "Copy Splunk {{ org_prefix }}_heavy_forwarder_outputs app.conf for deployment"
+  copy:
+    content: |
+      [install]
+      state = enabled
+
+      [package]
+      check_for_updates = false
+
+      [ui]
+      is_visible = false
+      is_manageable = false
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_heavy_forwarder_outputs/local/app.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  no_log: true
+
+- name: "Copy Splunk {{ org_prefix }}_heavy_forwarder_outputs outputs.conf for deployment"
+  copy:
+    content: |
+      [tcpout]
+      defaultGroup = primary_indexers
+      forwardedindex.2.whitelist = (_audit|_introspection|_internal)
+      disabled = 0
+
+      [tcpout:primary_indexers]
+      indexerDiscovery = clustered_indexers
+      forceTimebasedAutoLB = true
+      autoLBFrequency = 30
+      useACK = true
+      maxQueueSize = 7MB
+
+      clientCert = {{ stage.ssl.splunk_clientCert | regex_replace('(XXXHOSTCERTXXX)', 'wildcard-cert-bundle.pem') }}
+      sslPassword = {{ stage.ssl.splunk_cluster_wildcard_sslPassword }}
+      sslVerifyServerCert = false
+
+      [indexer_discovery:clustered_indexers]
+      pass4SymmKey = {{ stage.splunk_cluster_pass4SymmKey }}
+      master_uri = https://{{ stage.splunk_master_uri }}
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_heavy_forwarder_outputs/local/outputs.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  no_log: true
+
+- name: "Copy Splunk {{ org_prefix }}_heavy_forwarder_outputs server.conf for deployment"
+  copy:
+    content: |
+      [sslConfig]
+      sslRootCAPath = {{ stage.ssl.splunk_sslRootCAPath }}
+      sslVersions = tls1.2
+      sslVersionsForClient = tls1.2
+      cipherSuite = TLSv1.2
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_heavy_forwarder_outputs/local/server.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+  no_log: true

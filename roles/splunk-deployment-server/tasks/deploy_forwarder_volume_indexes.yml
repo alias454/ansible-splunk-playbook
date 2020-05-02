@@ -1,0 +1,47 @@
+---
+# Configure Deployment Server
+
+# Configure indexes to use with deployment cluster Master.
+# The file will be created on the Deployment server and then pushed to the CM and SH
+# From the CM a process will run to deploy out to the indexers
+
+- name: "Create {{ org_prefix }}_forwarder_volume_indexes app directory"
+  file:
+    path: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_forwarder_volume_indexes/local/"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+    recurse: yes
+    state: directory
+
+- name: "Create {{ org_prefix }}_forwarder_volume_indexes app.conf for deployment"
+  copy:
+    content: |
+      [install]
+      state = enabled
+
+      [package]
+      check_for_updates = false
+
+      [ui]
+      is_visible = false
+      is_manageable = false
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_forwarder_volume_indexes/local/app.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx
+
+- name: "Create {{ org_prefix }}_forwarder_volume_indexes indexes.conf for deployment"
+  copy:
+    content: |
+      [volume:primary]
+      maxVolumeDataSizeMB = {{ forwarder_primary_maxVolumeDataSizeMB }}
+      path = {{ forwarder_primary_path }}
+
+      [volume:secondary]
+      maxVolumeDataSizeMB = {{ forwarder_secondary_maxVolumeDataSizeMB }}
+      path = {{ forwarder_secondary_path }}
+    dest: "{{ splunk_base }}/etc/deployment-apps/{{ org_prefix }}_forwarder_volume_indexes/local/indexes.conf"
+    owner: splunk
+    group: splunk
+    mode: u=rwX,g=rX,o-rwx

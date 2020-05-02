@@ -32,6 +32,12 @@ search_primary_path: "/storage/splunk"
 search_secondary_maxVolumeDataSizeMB: "21288"
 search_secondary_path: "/storage/splunk"
 
+# A 20GB filesystem setting primary and secondary volume values
+forwarder_primary_maxVolumeDataSizeMB: "8187"
+forwarder_primary_path: "/opt/splunk"
+forwarder_secondary_maxVolumeDataSizeMB: "10644"
+forwarder_secondary_path: "/opt/splunk"
+
 # Set under the appropriate environment variable in the secrets file
 # splunk certificate paths
 default_stage:
