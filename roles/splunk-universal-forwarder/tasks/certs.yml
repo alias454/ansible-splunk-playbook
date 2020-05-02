@@ -1,7 +1,7 @@
 ---
 - name: Ensure directory exists for local self-signed TLS certs.
   file:
-    path: "{{ splunk_base }}/etc/auth/{{ org_name }}"
+    path: "{{ splunk_uf_base }}/etc/auth/{{ org_name }}"
     state: directory
     owner: splunk
     group: splunk
@@ -10,8 +10,8 @@
 - name: Remove a cert bundle if it exists to allow creation of new
   shell: "rm -f {{ item }}"
   args:
-    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
-    removes: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item }}"
+    chdir: "{{ splunk_uf_base }}/etc/auth/{{ org_name }}"
+    removes: "{{ splunk_uf_base }}/etc/auth/{{ org_name }}/{{ item }}"
   become_user: splunk
   when: use_internal_ca|default(False) and ca_force_create|default(False)
   with_items:
@@ -23,7 +23,7 @@
 - name: "Distribute wildcard-priv-key.pem, wildcard-cert.pem to host"
   copy:
     src: "{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}"
-    dest: "{{ splunk_base }}/etc/auth/{{ org_name }}/{{ item }}"
+    dest: "{{ splunk_uf_base }}/etc/auth/{{ org_name }}/{{ item }}"
     owner: splunk
     group: splunk
     mode: '0600'
@@ -35,11 +35,11 @@
   no_log: true
 
 - name: Generate a CA bundle from appsCA.pem and ca-cert.pem
-  shell: "cat ca-cert.pem {{ splunk_base }}/etc/auth/appsCA.pem > ca-cert-bundle.pem"
+  shell: "cat ca-cert.pem {{ splunk_uf_base }}/etc/auth/appsCA.pem > ca-cert-bundle.pem"
   register: ca_bundle_check
   args:
-    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
-    creates: "{{ splunk_base }}/etc/auth/{{ org_name }}/ca-cert-bundle.pem"
+    chdir: "{{ splunk_uf_base }}/etc/auth/{{ org_name }}"
+    creates: "{{ splunk_uf_base }}/etc/auth/{{ org_name }}/ca-cert-bundle.pem"
   become_user: splunk
   when: use_internal_ca|default(False)
   no_log: true
@@ -48,8 +48,8 @@
   shell: "cat wildcard-cert.pem wildcard-priv-key.pem ca-cert.pem > wildcard-cert-bundle.pem"
   register: wildcard_bundle_check
   args:
-    chdir: "{{ splunk_base }}/etc/auth/{{ org_name }}"
-    creates: "{{ splunk_base }}/etc/auth/{{ org_name }}/wildcard-cert-bundle.pem"
+    chdir: "{{ splunk_uf_base }}/etc/auth/{{ org_name }}"
+    creates: "{{ splunk_uf_base }}/etc/auth/{{ org_name }}/wildcard-cert-bundle.pem"
   become_user: splunk
   when: use_deployment_server|default(False) and use_internal_ca|default(False)
   no_log: true

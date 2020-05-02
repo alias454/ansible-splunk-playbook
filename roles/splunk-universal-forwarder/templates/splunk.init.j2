@@ -19,22 +19,22 @@ USER=splunk
 
 splunk_start() {
   echo Starting Splunk...
-  "{{ splunk_base }}/bin/splunk" start --no-prompt --answer-yes
+  "{{ splunk_uf_base }}/bin/splunk" start --no-prompt --answer-yes
   RETVAL=$?
 }
 splunk_stop() {
   echo Stopping Splunk...
-  "{{ splunk_base }}/bin/splunk" stop
+  "{{ splunk_uf_base }}/bin/splunk" stop
   RETVAL=$?
 }
 splunk_restart() {
   echo Restarting Splunk...
-  "{{ splunk_base }}/bin/splunk" restart
+  "{{ splunk_uf_base }}/bin/splunk" restart
   RETVAL=$?
 }
 splunk_status() {
   echo Splunk status:
-  "{{ splunk_base }}/bin/splunk" status
+  "{{ splunk_uf_base }}/bin/splunk" status
   RETVAL=$?
 }
 case "$1" in

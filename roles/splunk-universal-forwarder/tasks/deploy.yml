@@ -1,33 +1,38 @@
 ---
-- name: Copy over the Splunk installation deb
-  copy: "src={{ splunk_package_file }} dest=/root/"
+- name: Copy down the Splunk installation deb
+  shell: "wget -O {{ splunk_uf_package_file }} 'https://www.splunk.com/page/download_track?file={{ splunk_uf_version }}/linux/{{ splunk_uf_package_file }}&ac=&wget=true&name=wget&platform=Linux&architecture=x86_64&version={{ splunk_uf_version }}&product={{ splunk_uf_product }}&typed=release'"
+  changed_when: False
+  check_mode: no
+  args:
+    chdir:  /root/
+    creates: "/root/{{ splunk_uf_package_file }}"
 
 - name: Checking if Splunk is installed
-  stat: "path={{ splunk_base }}/bin/splunk"
+  stat: "path={{ splunk_uf_base }}/bin/splunk"
   register: splunk_path
 
 - name: Splunk is installed
-  debug: msg='splunk is installed at {{ splunk_base }}'
+  debug: msg='splunk is installed at {{ splunk_uf_base }}'
   when: splunk_path.stat.exists
 
 - name: Get Splunk version
-  shell: "echo $(cat {{ splunk_base }}/etc/splunk.version | grep VERSION | cut -d'=' -f2)"
-  register: splunk_version_check
+  shell: "echo $(cat {{ splunk_uf_base }}/etc/splunk.version | grep VERSION | cut -d'=' -f2)"
+  register: splunk_uf_version_check
   changed_when: False
   check_mode: no
   when: splunk_path.stat.exists
 
 - name: Install Splunk from .deb package
-  apt: "deb=/root/{{splunk_package_file}}"
+  apt: "deb=/root/{{splunk_uf_package_file}}"
   register: splunk_installed
-  when: splunk_version_check is skipped or splunk_version_check.stdout is version(splunk_version, '<')
+  when: splunk_uf_version_check is skipped or splunk_uf_version_check.stdout is version(splunk_uf_version, '<')
 
 # Fix up perms on filesystem after user and group created
 - name: Fix up perms after splunk user created
-  file: dest="{{ splunk_base }}" owner=splunk group=splunk recurse=yes
+  file: dest="{{ splunk_uf_base }}" owner=splunk group=splunk recurse=yes
 
 - name: Sets default acl for splunk on /var/log
-  shell: setfacl -Rm u:splunk:rX,d:u:splunk:rX /var/log
+  shell: setfacl -Rm u:splunk:rwX,d:u:splunk:rwX /var/log
 
 - name: Add sudoers config to allow service restarts as splunk user
   copy:

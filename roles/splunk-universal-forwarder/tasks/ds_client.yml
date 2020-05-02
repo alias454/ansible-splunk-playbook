@@ -2,7 +2,7 @@
 - name: Copy Splunk deploymentclient.conf for system
   template:
     src: system_local.deploymentclient.j2
-    dest: "{{ splunk_base }}/etc/system/local/deploymentclient.conf"
+    dest: "{{ splunk_uf_base }}/etc/system/local/deploymentclient.conf"
     owner: splunk
     group: splunk
     mode: '0640'

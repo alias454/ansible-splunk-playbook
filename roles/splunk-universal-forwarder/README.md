@@ -78,13 +78,16 @@ Options can be overridden in higher level configs or a secrets file.
 
 Define the base directory where splunkforwarder is installed.
 ```yaml
-splunk_base: '/opt/splunkforwarder'
+splunk_uf_base: '/opt/splunkforwarder'
 ```
 
 Use wget to grab the latest package from splunk.com and place the file under -> ***splunk-universal-forwarder/files***.
 ```yaml
-splunk_package_file: 'splunkforwarder-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb'
-splunk_version: '7.1.0'
+# Use wget to grab the latest package from splunk.com
+splunk_uf_package_file: 'splunkforwarder-7.3.3-7af3758d0d5e-linux-2.6-amd64.deb'
+splunk_uf_version: '7.3.3'
+splunk_uf_base: '/opt/splunkforwarder'
+splunk_uf_product: 'universalforwarder'
 ```
 
 Configure the Universal Forwarder to connect to a deployment server for app management.  

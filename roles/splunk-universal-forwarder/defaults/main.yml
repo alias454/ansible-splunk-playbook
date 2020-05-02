@@ -1,6 +1,6 @@
 ---
-# Secrets are stored in the secrets folder that you create
-# Create the secrets folder in the ./group_vars/ folder
+# Secrets are stored in the secops team drive in ansible_artifacts
+# Download the secrets folder from to ./group_vars/ folder
 
 # Required variables
 # splunk_sslPassword: 'located in secrets file'
@@ -11,9 +11,10 @@
 # Packages
 # Use wget to grab the latest package from splunk.com
 # Place file in roles folder under -> splunk-base/files
-splunk_package_file: 'splunkforwarder-7.2.5-088f49762779-linux-2.6-amd64.deb'
-splunk_version: '7.2.5'
-splunk_base: '/opt/splunkforwarder'
+splunk_uf_package_file: 'splunkforwarder-7.3.3-7af3758d0d5e-linux-2.6-amd64.deb'
+splunk_uf_version: '7.3.3'
+splunk_uf_base: '/opt/splunkforwarder'
+splunk_uf_product: 'universalforwarder'
 
 # Manage apps using a deployment server.
 # http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/Updatepeerconfigurations
