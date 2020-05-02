@@ -108,6 +108,5 @@
     section: license
     option: master_uri
     value: "https://{{ stage.splunk_lm_uri }}"
-  when:
-    - "('splunk-staging-lm' or 'splunk-lm') not in group_names"
+  when: "('splunk-lm' not in group_names) or ('splunk-staging-lm' not in group_names)"
   no_log: true

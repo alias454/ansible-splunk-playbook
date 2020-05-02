@@ -5,16 +5,21 @@ deploy_stage: "staging"
 
 # Packages
 # Use wget to grab the latest package from splunk.com
-# Place file in roles folder under -> splunk-base/files
-splunk_package_file: 'splunk-7.2.5-088f49762779-linux-2.6-amd64.deb'
-splunk_version: '7.2.5'
+splunk_uf_package_file: 'splunkforwarder-7.3.3-7af3758d0d5e-linux-2.6-amd64.deb'
+splunk_uf_version: '7.3.3'
+splunk_uf_base: '/opt/splunkforwarder'
+splunk_uf_product: 'universalforwarder'
+
+splunk_package_file: 'splunk-7.3.3-7af3758d0d5e-linux-2.6-amd64.deb'
+splunk_version: '7.3.3'
 splunk_base: '/opt/splunk'
+splunk_product: 'splunk'
 
 # Set storage volume data size for indexers
-# A 5TB primary volume and a 16TB secondary volume.
-idx_primary_maxVolumeDataSizeMB: "5832300"
+# A 1TB primary volume and a 2TB secondary volume.
+idx_primary_maxVolumeDataSizeMB: "786432"
 idx_primary_path: "/storage/splunk"
-idx_secondary_maxVolumeDataSizeMB: "15562832"
+idx_secondary_maxVolumeDataSizeMB: "1992294"
 idx_secondary_path: "/coldstorage/splunk"
 
 # Set storage volume data size for search heads

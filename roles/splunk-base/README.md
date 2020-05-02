@@ -1,16 +1,19 @@
 # Base Node Overview and Purpose
 
-The base Splunk role runs against all members of the specified inventory to install Splunk in a consistent manner. 
-The **splunk-base** role configures server optimizations, directory structures, installs splunk, deploys certificates and keys, and sets default configuration parameters.
+The base Splunk role runs against all members of the specified inventory to install Splunk in a consistent manner.  
+The **splunk-base** role manages the installation of splunk, deploys certificates and keys, and sets default configuration parameters.
 
 Server optimizations:  
-Disabling transparent-huge-pages, setting swappiness, and ulimits for each node.
+Disabling transparent-huge-pages, setting swappiness, and ulimits for each node is best practice for Splunk deployments.  
+These settings are managed during instance deployment or via a separate **splunk-kernel** playbook.
 
 Directory structure:  
-Configuring the correct directory structure, and preparing disks for storage volumes, and linking /opt/splunk to the appropriate location.
+Configuring directory structure, preparing mounts for storage volumes, and linking /opt/splunk to the appropriate location.  
+These settings are managed during instance deployment or via a separate **splunk-mounts** playbook.  
+It is assumed the directory structure and mounts have been configured prior to running this playbook.
 
 Install Splunk:  
-Installing Splunk using a .deb package which takes care of adding the splunk user ad group among other things.
+Installing Splunk using a .deb package which takes care of adding the splunk user and group among other things.
 
 Deploy certificate and keys:  
 Installing certificates allows for three options. One option is using default certs that are generated during the splunk install.
@@ -78,22 +81,15 @@ NOTE: If you have followed along with the Splunk documentation they leave out on
 You have to set the value for **serverCert** to the server.conf file otherwise devices will not be able to connect.
 
 ## Splunk Base Node Role Objectives
-server optimizations, directory structures, installs splunk, deploys certificates and keys, and sets default configuration parameters
+directory structures, installs splunk, deploys certificates and keys, and sets default configuration parameters
 1. Configure the Splunk Base Nodes after splunk-base has run
-    1. Configure disk partitions and mount filesystems
-    2. Install splunk from a package management package(.deb)
-    3. Create/Copy certificates and key for a secure Splunk environment
-    4. Set configuration options to allow proper operation of a Splunk Cluster
-    5. Setup option for LDAP
+    1. Install splunk from a package management package(.deb)
+    2. Create/Copy certificates and key for a secure Splunk environment
+    3. Set configuration options to allow proper operation of a Splunk Cluster
+    4. Setup option for LDAP
 
 ### The playbook will configure:
   - base
-    - splunk-base : Disable transparent-huge-pages
-    - splunk-base : Set swappiness to 10 in /etc/sysctl.conf
-    - splunk-base : Set ulimits for splunk user
-    - splunk-base : Create directory structure and setuo disk partitions using parted
-    - splunk-base : Create and mount filesystem on device
-    - splunk-base : Create symlink from /opt/splunk to /storage/splunk
     - splunk-base : Install Splunk from .deb package
     - splunk-base : Fix up perms after splunk user created
     - splunk-base : Sets default acl for splunk on /var/log
@@ -121,17 +117,14 @@ server optimizations, directory structures, installs splunk, deploys certificate
     ├── defaults
     │   └── main.yml
     ├── files
-    │   ├── disable-transparent-hugepages.init
-    │   └── splunk-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb
+    │   └── apps
     ├── handlers
     │   └── main.yml
     ├── tasks
     │   ├── certs.yml
     │   ├── config.yml
     │   ├── deploy.yml
-    │   ├── kernel.yml
     │   ├── main.yml
-    │   ├── mounts.yml
     │   └── service.yml
     └── templates
         ├── splunk.init.j2
@@ -156,18 +149,27 @@ splunk_base: '/opt/splunk'
 
 Use wget to grab the latest package from splunk.com and place the file under -> ***splunk-base/files*** folder.
 ```yaml
-splunk_package_file: 'splunk-7.1.0-2e75b3406c5b-linux-2.6-amd64.deb'
-splunk_version: '7.1.0'
+# Use wget to grab the latest package from splunk.com
+splunk_package_file: 'splunk-7.3.3-7af3758d0d5e-linux-2.6-amd64.deb'
+splunk_version: '7.3.3'
+splunk_base: '/opt/splunk'
+splunk_product: 'splunk'
 ```
 
 Default disk info (will apply unless overridden by a group_var config like **splunk-staging-idx**).
 ```yaml
 # Default disk info (will apply unless overridden by a group_var config)
 disk_mounts:
-  - device: "/dev/xvdf"
-    type: "default"
-    fs_type: "xfs"
-    mount_path: "/storage"
+  - mount_path: "/storage"
+```
+
+Example indexer config (configured by a group_var config ex. **splunk-staging-idx**).
+```yaml
+# Example indexer config (configured by a group_var config ex. splunk-idx)
+# Additional mount used on indexers
+disk_mounts:
+  - mount_path: "/storage"
+  - mount_path: "/coldstorage"
 ```
 
 Enable splunk web by default and set port to use.

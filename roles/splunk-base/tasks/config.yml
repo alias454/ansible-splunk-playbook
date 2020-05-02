@@ -86,7 +86,7 @@
   when: use_splunk_web|default(False)
 
 - name: Use splunk hash-passwd to return a password hash
-  command: "{{ splunk_base }}/bin/splunk hash-passwd {{ stage.splunk_default_admin_password }}"
+  command: "{{ splunk_base }}/bin/splunk hash-passwd '{{ stage.splunk_default_admin_password }}'"
   register: splunk_hashed_password
   become_user: splunk
   check_mode: no

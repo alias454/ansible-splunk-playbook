@@ -16,7 +16,7 @@
     tpl_dest: "/etc/systemd/system/multi-user.target.wants/Splunkd.service"
   when: ansible_service_mgr == "systemd"
 
-- name: Set facts for non systemd servers
+- name: Set facts for non-systemd servers
   set_fact:
     service_file: "/etc/init.d/splunk"
     notify_task: "restart splunk service"
@@ -24,9 +24,6 @@
     tpl_dest: "/etc/init.d/splunk"
   when: ansible_service_mgr != "systemd"
 
-- import_tasks: kernel.yml
-- import_tasks: mounts.yml
-- import_tasks: lvm_mounts.yml
 - import_tasks: deploy.yml
 - import_tasks: certs.yml
 - import_tasks: config.yml

@@ -1,7 +1,7 @@
 # Splunk playbook Objectives
 This playbook deploys configuration changes to setup a Splunk cluster with independent components.
 
-  - Configure all splunk nodes with common configuration
+  - Configure splunk nodes with common configuration
   - Setup certificates on Splunk nodes
   - Install a license on the License Master
   - Configure a Deployment Server
@@ -31,14 +31,9 @@ Prior to using this playbook there are a few things that should be handled.
   - Clone this repo to your local machine
   - Read the Additional Role README info (all of them)
   - Downloaded Splunk package files and placed them in the correct folders (**use latest versions if new install**)
-    - Splunk
-      - **roles/splunk-base/files/splunk-7.x.x-2e75b3406c5b-linux-2.6-amd64.deb**
-    - Universal Forwarder
-      - **roles/splunk-universal-forwarder/files/splunkforwarder-7.x.x-2e75b3406c5b-linux-2.6-amd64.deb**
     - Splunk_TA_nix add-on
-      - **roles/splunk-base/files/apps/splunk-add-on-for-unix-and-linux_xxx.tgz**
       - **roles/splunk-deployment-server/files/packages/splunk-add-on-for-unix-and-linux_xxx.tgz**
-    - Grab any additional Splunk add-ons/app packages that may be in use and store them in the appropriate place
+    - Grab any additional Splunk add-ons that may be in use and store them in the appropriate place
       - **roles/splunk-deployment-server/files/packages/**
   - Setup specific configurations in the secrets folder
     - Create the secrets file at **group_vars/secrets/secrets.yml** from the example secrets.example
@@ -46,8 +41,6 @@ Prior to using this playbook there are a few things that should be handled.
     - Update the custom_packages file at **group_vars/custom_files/custom_packages.yml** with additional add-ons/apps info
 
 Run this in a test environment first **do not run in production without testing**
-
-Note: Make sure to copy the **splunk-add-on-for-unix-and-linux_xxx.tgz** to both locations listed above
 
 ## Run the playbook like this:  
   >ansible-playbook /path/to/splunk-staging.yml -u username --become --ask-become-pass (--check)
@@ -85,12 +78,6 @@ Apply individual roles as needed using **tags** to run specific portions of the 
     - Copy keys and certs from CA to ansible machine for distribution
     - Distribute keys and certs to hosts
   - splunk-base:
-    - Disable transparent-huge-pages
-    - Set swappiness to 10 in /etc/sysctl.conf
-    - Set ulimits for splunk user
-    - Create directory structure and setuo disk partitions using parted
-    - Create and mount filesystem on device
-    - Create symlink from /opt/splunk to /storage/splunk
     - Install Splunk from .deb package
     - Fix up perms after splunk user created
     - Sets default acl for splunk on /var/log
@@ -154,7 +141,7 @@ Apply individual roles as needed using **tags** to run specific portions of the 
 - Setup config on Splunk Peer Nodes
   - splunk-peer-nodes:
     - Check if clustering is enabled
-    - sAdd Peer Nodes to cluster (Multisite or Singlesite)
+    - Add Peer Nodes to cluster (Multisite or Singlesite)
 
 ## Run the UF playbook like this:  
   >ansible-playbook /path/to/splunk-staging-UF.yml -u username --become --ask-become-pass (--check)

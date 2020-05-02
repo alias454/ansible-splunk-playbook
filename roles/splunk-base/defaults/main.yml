@@ -11,16 +11,20 @@
 # Packages
 # Use wget to grab the latest package from splunk.com
 # Place file in roles folder under -> splunk-base/files
-splunk_package_file: 'splunk-7.1.2-a0c72a66db66-linux-2.6-amd64.deb'
-splunk_version: '7.1.2'
+splunk_package_file: 'splunk-7.3.3-7af3758d0d5e-linux-2.6-amd64.deb'
+splunk_version: '7.3.3'
 splunk_base: '/opt/splunk'
+splunk_product: 'splunk'
 
 # Default disk info (will apply unless overridden by a group_var config)
 disk_mounts:
-  - device: "/dev/xvdf"
-    type: "default"
-    fs_type: "xfs"
-    mount_path: "/storage"
+  - mount_path: "/storage"
+
+# Example indexer config (configured by a group_var config ex. splunk-idx)
+# Additional mount used on indexers
+#disk_mounts:
+#  - mount_path: "/storage"
+#  - mount_path: "/coldstorage"
 
 # Enable splunk web by default and set port to use
 use_splunk_web: 1

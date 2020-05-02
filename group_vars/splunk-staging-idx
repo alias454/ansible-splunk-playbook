@@ -3,15 +3,10 @@
 # Specific configuration for global indexers
 
 # Disk info (will override default config)
+# Additional mount used on indexers
 disk_mounts:
-  - device: "/dev/xvdb"
-    type: "indexer"
-    fs_type: "xfs"
-    mount_path: "/storage"
-  - device:  "/dev/xvdc"
-    type: "indexer"
-    fs_type: "xfs"
-    mount_path: "/coldstorage"
+  - mount_path: "/storage"
+  - mount_path: "/coldstorage"
 
 # Disable SplunkWeb on indexers (will override default config)
 use_splunk_web: 0

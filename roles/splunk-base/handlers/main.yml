@@ -1,8 +1,10 @@
 ---
+# Settings for non-systemd systems
 - name: restart splunk service
   service: name=splunk state=restarted
-  when: ansible_service_mgr != "systemd"'
+  when: ansible_service_mgr != "systemd"
 
+# Settings for systemd systems
 - name: restart splunk systemd
   systemd:
     state: restarted

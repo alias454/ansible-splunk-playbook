@@ -1,6 +1,11 @@
 ---
-- name: Copy over the Splunk installation deb
-  copy: "src={{ splunk_package_file }} dest=/root/"
+- name: Copy down the Splunk installation deb
+  shell: "wget -O {{ splunk_package_file }} 'https://www.splunk.com/page/download_track?file={{ splunk_version }}/linux/{{ splunk_package_file }}&ac=&wget=true&name=wget&platform=Linux&architecture=x86_64&version={{ splunk_version }}&product={{ splunk_product }}&typed=release'"
+  changed_when: False
+  check_mode: no
+  args:
+    chdir:  /root/
+    creates: "/root/{{ splunk_package_file }}"
 
 - name: Checking if Splunk is installed
   stat: "path={{ splunk_base }}/bin/splunk"
@@ -26,12 +31,7 @@
 - name: Fix up perms after splunk user created
   file: dest="{{ item.mount_path }}" owner=splunk group=splunk recurse=yes
   with_items: "{{ disk_mounts }}"
-
-# Fix up perms on filesystem after user and group created
-- name: Fix up perms after splunk user created
-  file: dest="{{ item.mount_path }}" owner=splunk group=splunk recurse=yes
-  with_items: "{{ lvm_mounts }}"
-  when: lvm_mounts is defined
+  when: disk_mounts is defined
 
 - name: Sets default acl for splunk on /var/log
   shell: setfacl -Rm u:splunk:rX,d:u:splunk:rX /var/log
