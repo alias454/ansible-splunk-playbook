@@ -18,6 +18,14 @@
     notify_task: "restart splunk service"
   when: ansible_service_mgr != "systemd"
 
+- name: Set parallel Ingestion Pipeline value in server.conf
+  ini_file:
+    path: "{{ splunk_base }}/etc/system/local/server.conf"
+    section: general
+    option: parallelIngestionPipelines
+    value: "{{ parallelIngestionPipelines }}"
+  no_log: true
+
 - name: Check if clustering is enabled
   shell: "echo $({{ splunk_base }}/bin/splunk list cluster-config -auth admin:'{{ stage.splunk_current_admin_password }}' | grep '{{ stage.splunk_master_uri }}')"
   become_user: splunk

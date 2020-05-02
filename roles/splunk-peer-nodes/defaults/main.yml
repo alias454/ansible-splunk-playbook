@@ -9,3 +9,6 @@ use_multisite_config: "true" #set to false when not using
 
 # Multisite config options http://docs.splunk.com/Documentation/Splunk/7.1.0/Indexer/MultisiteCLI
 site: "site1"
+
+# Set Parallel Ingestion Pipeline Value
+parallelIngestionPipelines: '1'
