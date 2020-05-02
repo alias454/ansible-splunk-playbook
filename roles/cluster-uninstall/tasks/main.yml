@@ -2,10 +2,28 @@
 # Clean up installed artifacts
 # Use for development but not in a real environment
 
+- name: Set facts for systemd servers
+  set_fact:
+    service_file: "/etc/systemd/system/multi-user.target.wants/Splunkd.service"
+  when: ansible_service_mgr == "systemd"
+
+- name: Set facts for non-systemd servers
+  set_fact:
+    service_file: "/etc/init.d/splunk"
+  when: ansible_service_mgr != "systemd"
+
 # Not a full clean but removes items most useful for testing
 - name: Shutdown Splunk using the service module
   service: name=splunk state=stopped
   ignore_errors: True
+  when: ansible_service_mgr != "systemd"
+
+- name: Shutdown Splunk using the systemd module
+  systemd:
+    state: stop
+    name: Splunkd
+  ignore_errors: True
+  when: ansible_service_mgr == "systemd"
 
 - name: Remove Splunk using the apt module
   apt:
@@ -18,7 +36,7 @@
 - name: Remove leftover Splunk artifacts using shell module
   shell: "{{ item }}"
   with_items:
-    - "rm -f /etc/init.d/splunk"
+    - "rm -f {{ service_file }}"
     - "rm -rf /storage/splunk"
     - "rm -rf /coldstorage/splunk"
     - "rm -rf /etc/ssl/ca-cert"
