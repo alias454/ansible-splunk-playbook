@@ -4,6 +4,7 @@
   hosts: "{{ servers | default('splunk-staging') }}"
   roles:
     - { role: common, tags: ['common', 'common-base'] }
+    - { role: splunk-kernel, tags: ['splunk-kernel', 'common-base'] }
     - { role: splunk-ca, tags: ['splunk-ca', 'common-base'] }
     - { role: splunk-base, tags: ['splunk-base', 'common-base'] }
 

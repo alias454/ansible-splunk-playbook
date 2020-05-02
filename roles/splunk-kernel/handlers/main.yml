@@ -1,0 +1,13 @@
+---
+# Settings for non-systemd systems
+- name: restart THP service
+  service: name=disable-transparent-hugepages state=restarted
+  when: ansible_service_mgr != "systemd"
+
+# Settings for systemd systems
+- name: restart THP systemd
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: disable-transparent-hugepages
+  when: ansible_service_mgr == "systemd"

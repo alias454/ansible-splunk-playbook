@@ -77,6 +77,10 @@ Apply individual roles as needed using **tags** to run specific portions of the 
     - Generate a Signed OpenSSL certificate for wildcard cert
     - Copy keys and certs from CA to ansible machine for distribution
     - Distribute keys and certs to hosts
+  - splunk-kernel:
+    - Setup disable-transparent-hugepages service
+    - Set swappiness to 10 in /etc/sysctl.conf
+    - Set ulimits for splunk user
   - splunk-base:
     - Install Splunk from .deb package
     - Fix up perms after splunk user created

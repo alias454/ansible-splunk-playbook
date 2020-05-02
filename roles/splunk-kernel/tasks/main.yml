@@ -1,0 +1,46 @@
+---
+# Set facts for running
+- name: Set facts for systemd servers
+  set_fact:
+    thp_notify_task: "restart THP systemd"
+    thp_src: "disable-transparent-hugepages.service"
+    thp_dest: "/etc/systemd/system/disable-transparent-hugepages.service"
+  when: ansible_service_mgr == "systemd"
+
+- name: Set facts for non-systemd servers
+  set_fact:
+    thp_notify_task: "restart THP service"
+    thp_src: "disable-transparent-hugepages.init"
+    thp_dest: "/etc/init.d/disable-transparent-hugepages"
+  when: ansible_service_mgr != "systemd"
+
+# Configure optimized ulimit, swappiness, and hugepages settings on Splunk nodes
+- name: Configures disable transparent hugepages service
+  copy:
+    src: "{{ thp_src }}"
+    dest: "{{ thp_dest }}"
+    mode: 0755
+  when: not ansible_check_mode
+  notify: "{{ thp_notify_task }}"
+
+- name: Verify non-systemd THP service is disabled
+  service:
+    name: disable-transparent-hugepages
+    enabled: no
+  ignore_errors: True
+  when: ansible_service_mgr == "systemd"
+
+- name: Set swappiness to 10 in /etc/sysctl.conf
+  sysctl:
+    name: vm.swappiness
+    value: 10
+    state: present
+
+- name: Set ulimits for splunk user
+  copy:
+    content: |
+      splunk soft nofile 64000
+      splunk hard nofile 64000
+      splunk soft nproc 8192
+      splunk hard nproc 8192
+    dest: /etc/security/limits.d/10-splunk.conf
