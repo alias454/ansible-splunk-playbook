@@ -13,6 +13,7 @@ This playbook deploys configuration changes to setup a Splunk cluster with indep
 
 ## Additional Role README info
 - [Role Overview and Purpose splunk-ca](./roles/splunk-ca/README.md)
+- [Role Overview and Purpose splunk-kernel](./roles/splunk-kernel/README.md)
 - [Role Overview and Purpose splunk-base](./roles/splunk-base/README.md)
 - [Role Overview and Purpose splunk-license-master](./roles/splunk-license-master/README.md)
 - [Role Overview and Purpose splunk-deployment-server](./roles/splunk-deployment-server/README.md)
