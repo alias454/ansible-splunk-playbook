@@ -1,17 +1,19 @@
 ---
-# defaults file for splunk-ca
+# defaults file for CA role
 use_internal_ca: 'true'
 
-# ca_force_create and ca_force_certify_nodes are designed to prevent overriding of existing certificates !
-ca_init: true                    # Install and configure the root CA (from scratch)
-ca_force_create: false           # Force creating even if files exist on the node
-ca_force_certify_nodes: false    # Force creating of node certificates
-ca_certify_nodes: true           # Generate certs for nodes
-ca_wildcard: true                # Generate wildcard cert
-ca_fetch_keys: true              # Copy key to control machine
-ca_distribute_keys: false        # Copy host keys and certs from control machine to nodes
-ca_distribute_ca_cert: true      # Copy CA cert from control machine to nodes
-ca_distribute_root_keys: true    # Copy CA cert and key to default locations on CA server
+# ca_force_create, ca_regen_cert, and ca_force_certify_nodes
+# are designed to facilitate easy certificate regeneration.
+ca_init: true                    # Install and configure the root CA, must be true to gen certs
+ca_force_create: false           # Force recreating ca_cert and ca_key even if they exist
+ca_regen_cert: false             # Force regen of ca_cert without recreating the ca_key
+ca_force_certify_nodes: false    # Force recreating individual node certs and wildcard certs
+ca_certify_nodes: true           # Gen certs for nodes, if this and wildcard are false just sets up CA
+ca_wildcard: true                # Gen cert as wildcard, if this and certify are false just sets up CA
+ca_fetch_keys: true              # Copy keys and certs from CA to ansible control machine
+ca_distribute_keys: false        # Copy keys and certs from control machine to nodes
+ca_distribute_ca_cert: true      # Copy CA cert from control machine to ALL nodes
+ca_distribute_root_keys: true    # Copy ca_cert and ca_key to default paths on CA only
 
 # Where the certs go
 ca_certs_dir: "/usr/local/share/ca-certificates"
@@ -23,18 +25,17 @@ ca_generated_certs_dir: "/etc/ssl/ca-certs"
 # Where to copy the generated cert files to locally
 ca_distribution_dir: "{{ playbook_dir }}/group_vars/secrets/certs"
 
-# how long should remain before we generate a new CA cert ?
-ca_cert_expiration_panic_threshold: 1209600 # 2 weeks
-ca_default_days: "1825"
+# Force certificate regeneration before cert expires.
+ca_cert_expiration_panic_threshold: "1209600" # 2 weeks (60*60*24*x days)
+ca_default_days: "1825" # 5 years
 
 # CA filenames
 ca_cert: ca-cert.pem
 ca_key: ca-key.pem
 ca_pub_key: ca-pubkey.pem
 
-# Should match the unique part of the CA's hostname
-
 # Set under the appropriate environment variable in the secrets file
+# The ca_descriptor should match the unique part of the CA's hostname
 default_stage:
   ca:
     ca_domain: "domain.tld"

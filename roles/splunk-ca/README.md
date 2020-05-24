@@ -1,7 +1,8 @@
 # CA Role Overview and Purpose
 
-By default Splunk has existing certs but those all use the same root key and can be prone to MITM attacks.  
-I decided as a preparation for running a Splunk cluster, I needed a way to manage certificates and distribute them between Splunk nodes.  
+By default Splunk sets up certs but those use the same root key and can be prone to MITM attacks.  
+As a preparation for running a Splunk cluster, I needed a way to manage certificates and distribute them between Splunk nodes.  
+
 This role is a heavily modified version of what can be found at the below links
   - https://www.tikalk.com/posts/2016/10/30/Running-Your-Own-Ansible-Driven-CA/
   - https://github.com/shelleg/ansible-role-ca
@@ -17,6 +18,19 @@ The general process for manually handling certs and certificate signing requests
 
 Assuming the client already trusts the CA, it is pretty simple. However, when the CA is untrusted, its cert also has to be installed on the client.  
 This role attempts to automate the above process, making it easier to manage internal CA requests.
+
+## Certificate check commands
+
+A few quick commands for checking the generated certs.  
+Display certificate information.
+```bash
+openssl x509 -text -noout -in ca-cert.pem
+```
+
+Display all certificates in a cert bundle.
+```bash
+openssl crl2pkcs7 -nocrl -certfile ca-cert.pem | openssl pkcs7 -print_certs -text -noout
+```
 
 ## CA Role Objectives
 
@@ -34,11 +48,11 @@ This role attempts to automate the above process, making it easier to manage int
   - splunk-base
     - splunk-ca : Check if ca.key and ca.pem certificate exists
     - splunk-ca : Ensure existing certificate is still valid 2 weeks from now
-    - splunk-ca : Generate an OpenSSL CA private key.
-    - splunk-ca : Generate a Self Signed OpenSSL CA certificate.
-    - splunk-ca : Generate an OpenSSL private key for client nodes.
-    - splunk-ca : Generate an OpenSSL CSR for client nodes.
-    - splunk-ca : Generate a Signed OpenSSL certificate for client nodes.
+    - splunk-ca : Generate an OpenSSL CA private key
+    - splunk-ca : Generate a Self Signed OpenSSL CA certificate
+    - splunk-ca : Generate an OpenSSL private key for client nodes
+    - splunk-ca : Generate an OpenSSL CSR for client nodes
+    - splunk-ca : Generate a Signed OpenSSL certificate for client nodes
     - splunk-ca : Copy keys and certs from CA to ansible machine for distribution
     - splunk-ca : Distribute keys and certs to hosts
 
@@ -61,6 +75,7 @@ This role attempts to automate the above process, making it easier to manage int
     │   └── wildcard_cert.yml
     └── templates
         ├── ca.conf.j2
+        ├── cert_index.txt.j2
         └── serial.j2
 
 ## How does this work?
@@ -77,16 +92,18 @@ use_internal_ca: 'true'
 
 Each of the below settings toggle some feature on or off depending on the bool setting.
 ```yaml
-# ca_force_create and ca_force_certify_nodes are designed to prevent overriding of existing certificates !
-ca_init: true                    # Install and configure the root CA (from scratch)
-ca_force_create: false           # Force creating even if files exist on the node
-ca_force_certify_nodes: false    # Force creating of node certificates
-ca_certify_nodes: true           # Generate certs for nodes
-ca_wildcard: true                # Generate wildcard cert
-ca_fetch_keys: true              # Copy key to control machine
-ca_distribute_keys: false        # Copy host keys and certs from control machine to nodes
-ca_distribute_ca_cert: true      # Copy CA cert from control machine to nodes
-ca_distribute_root_keys: true    # Copy CA cert and key to default locations on CA server
+# ca_force_create, ca_regen_cert, and ca_force_certify_nodes
+# are designed to facilitate easy certificate regeneration.
+ca_init: true                    # Install and configure the root CA, must be true to gen certs
+ca_force_create: false           # Force recreating ca_cert and ca_key even if they exist
+ca_regen_cert: false             # Force regen of ca_cert without recreating the ca_key
+ca_force_certify_nodes: false    # Force recreating individual node certs and wildcard certs
+ca_certify_nodes: true           # Gen certs for nodes, if this and wildcard are false just sets up CA
+ca_wildcard: true                # Gen cert as wildcard, if this and certify are false just sets up CA
+ca_fetch_keys: true              # Copy keys and certs from CA to ansible control machine
+ca_distribute_keys: false        # Copy keys and certs from control machine to nodes
+ca_distribute_ca_cert: true      # Copy CA cert from control machine to ALL nodes
+ca_distribute_root_keys: true    # Copy ca_cert and ca_key to default paths on CA only
 ```
 
 The below settings designate the default locations for certs and key files. 

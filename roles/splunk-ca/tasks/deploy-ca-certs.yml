@@ -10,7 +10,7 @@
     - "{{ ca_key }}"
     - "{{ ca_pub_key }}"
 
-- name: Generate an OpenSSL CA private key.
+- name: Generate an OpenSSL CA private key
   openssl_privatekey:
     path: "{{ ca_generated_certs_dir }}/{{ ca_key }}"
     passphrase: "{{ stage.ca.ca_sslPassword }}"
@@ -18,20 +18,37 @@
     owner: root
     group: root
     mode: '0600'
-  when: _ca_key_exists is undefined or ca_force_create == true
+  when: _ca_key_exists is undefined or ca_force_create|default(False)
 
-- name: Generate an OpenSSL CA public key.
+- name: Generate an OpenSSL CA public key
   shell: "openssl rsa -in {{ ca_generated_certs_dir }}/{{ ca_key }} -pubout -out {{ ca_generated_certs_dir }}/{{ ca_pub_key }} -passin pass:'{{ stage.ca.ca_sslPassword }}'"
   args:
     chdir: "{{ ca_generated_certs_dir }}"
-  when: _ca_missing_cert is undefined or ca_force_create == true
+  when: _ca_missing_cert is undefined or ca_force_create|default(False)
   no_log: true
 
-- name: Generate a Self Signed OpenSSL CA certificate.
-  shell: "openssl req -config {{ ca_conf_dir }}/ca.conf -new -key {{ ca_generated_certs_dir }}/{{ ca_key }} -x509 -days {{ ca_default_days }} -out {{ ca_generated_certs_dir }}/{{ ca_cert }} -passin pass:'{{ stage.ca.ca_sslPassword }}' -subj \"/CN={{ item }}\""
+- name: "Copy old cert to {{ ca_generated_certs_dir }}/{{ ca_cert }}.bak"
+  copy:
+    src: "{{ ca_generated_certs_dir }}/{{ item }}"
+    dest: "{{ ca_generated_certs_dir }}/{{ item }}.bak"
+    remote_src: yes
+  with_items:
+    - "{{ ca_cert }}"
+  when: cert_file.stat.exists and ca_regen_cert|default(False)
+  no_log: true
+
+- name: Generate a Self Signed OpenSSL CA certificate
+  shell: "openssl req -x509 -new -key {{ ca_generated_certs_dir }}/{{ ca_key }} -out {{ ca_generated_certs_dir }}/{{ ca_cert }} -passin pass:'{{ stage.ca.ca_sslPassword }}' -days {{ ca_default_days }} -config {{ ca_conf_dir }}/ca.conf -extensions v3_ca"
   args:
     chdir: "{{ ca_generated_certs_dir }}"
-  when: _ca_missing_cert is undefined or ca_force_create == true
+  when: _ca_missing_cert is undefined or ca_regen_cert|default(False) or ca_force_create|default(False)
   with_items:
     - "{{ ansible_fqdn }}"
+  no_log: true
+
+- name: Join old cert with new cert
+  shell: "cat {{ ca_generated_certs_dir }}/{{ item }}.bak >> {{ ca_generated_certs_dir }}/{{ item }}"
+  with_items:
+    - "{{ ca_cert }}"
+  when: cert_file.stat.exists and ca_regen_cert|default(False)
   no_log: true

@@ -48,9 +48,11 @@ use_internal_ca: 'true'
 # When toggling use_internal_ca setting you may want to use splunk defaults
 use_stage_spec: false
 
-# ca_force_create and ca_force_certify_nodes are designed to prevent overriding of existing certificates !
-ca_force_create: false           # Force creating even if files exist on the node
-ca_force_certify_nodes: false    # Force creating of node certificates
+# ca_force_create, ca_regen_cert, and ca_force_certify_nodes
+# are designed to facilitate easy certificate regeneration.
+ca_init: true                    # Install and configure the root CA, must be true to gen certs
+ca_force_create: false           # Force recreating ca_cert and ca_key even if they exist
+ca_regen_cert: false             # Force regen of ca_cert without recreating the ca_key
 
 # Use multisite or single site cluster config
 #splunk_cluster_pass4SymmKey: 'located in secrets file'

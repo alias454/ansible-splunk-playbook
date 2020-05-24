@@ -17,8 +17,9 @@
   with_items:
     - serial
     - ca.conf
+    - cert_index.txt
 
-- name: Ensure directory exists for generated TLS certs.
+- name: Ensure directory exists for generated TLS certs
   file:
     path: "{{ ca_generated_certs_dir }}"
     state: directory

@@ -14,7 +14,7 @@
     - "{{ ca_key }}"
     - "{{ ca_pub_key }}"
 
-- name: "Copy wildcard cert ad private key"
+- name: "Copy wildcard cert and private key"
   fetch: src="{{ ca_generated_certs_dir }}/{{ item }}" dest="{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}" flat=yes
   when: ca_wildcard|default(False)
   with_items:

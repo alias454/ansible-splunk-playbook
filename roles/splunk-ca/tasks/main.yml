@@ -1,5 +1,5 @@
 ---
-# Configure Splunk private CA
+# Configure Custom private CA
 - name: Include Secrets
   include_vars: "./group_vars/secrets/secrets.yml"
 
@@ -17,35 +17,38 @@
         - not ca_force_create|default(False)
         - "stage.ca.ca_descriptor in ansible_hostname"
 
-    # Runs on CA -- ca_force_create defaults to false
+    # Runs on CA -- ca_force_create and ca_regen_cert default to false
     - import_tasks: deploy-ca-config.yml
       when:
         - ca_init|default(False)
-        - ca_force_create|default(False)
+        - ca_force_create|default(False) or ca_regen_cert|default(False)
         - "stage.ca.ca_descriptor in ansible_hostname"
 
-    # Runs on CA -- ca_force_create defaults to false
+    # Runs on CA -- ca_force_create and ca_regen_cert default to false
     - import_tasks: deploy-ca-certs.yml
       when:
         - ca_init|default(False)
-        - ca_force_create|default(False)
+        - ca_force_create|default(False) or ca_regen_cert|default(False)
         - "stage.ca.ca_descriptor in ansible_hostname"
 
     # Runs on CA
     - import_tasks: certify_nodes.yml
       when:
+        - ca_init|default(False)
         - ca_certify_nodes|default(False)
         - "stage.ca.ca_descriptor in ansible_hostname"
 
     # Runs on CA
     - import_tasks: wildcard_cert.yml
       when:
+        - ca_init|default(False)
         - ca_wildcard|default(False)
         - "stage.ca.ca_descriptor in ansible_hostname"
 
     # Runs on CA
     - import_tasks: fetch_keys.yml
       when:
+        - ca_init|default(False)
         - ca_fetch_keys|default(False)
         - "stage.ca.ca_descriptor in ansible_hostname"
 

@@ -9,7 +9,7 @@
     - wildcard
 
 # Generate wildcard certificate on the CA and then move it later
-- name: Generate an OpenSSL private key for wildcard cert.
+- name: Generate an OpenSSL private key for wildcard cert
   openssl_privatekey:
     path: "{{ ca_generated_certs_dir }}/{{ item }}-priv-key.pem"
     passphrase: "{{ stage.ssl.splunk_cluster_wildcard_sslPassword }}"
@@ -21,21 +21,28 @@
   with_items:
     - wildcard
 
-- name: Generate an OpenSSL CSR for wildcard cert.
+- name: Generate an OpenSSL CSR for wildcard cert
   openssl_csr:
     path: "{{ ca_generated_certs_dir }}/{{ item }}.csr"
     privatekey_path: "{{ ca_generated_certs_dir }}/{{ item }}-priv-key.pem"
     privatekey_passphrase: "{{ stage.ssl.splunk_cluster_wildcard_sslPassword }}"
+    country_name: "{{ stage.ca.ca_country }}"
+    stateOrProvinceName: "{{ stage.ca.ca_state }}"
+    localityName: "{{ stage.ca.ca_locality }}"
+    organization_name: "{{ stage.ca.ca_organization }}"
+    organizationalUnitName: "{{ stage.ca.ca_organizational_unit }}"
     common_name: "*.{{ stage.ca.ca_domain }}"
+    emailAddress: "{{ stage.ca.ca_email }}"
     owner: root
     group: root
     mode: '0600'
   with_items:
     - wildcard
 
-- name: Generate a Signed OpenSSL certificate for wildcard cert.
-  shell: "openssl x509 -req -days {{ ca_default_days }} -in {{ ca_generated_certs_dir }}/{{ item }}.csr -CA {{ ca_generated_certs_dir }}/{{ ca_cert }} -CAkey {{ ca_generated_certs_dir }}/{{ ca_key }} -CAcreateserial -out {{ ca_generated_certs_dir }}/{{ item }}-cert.pem -passin pass:'{{ stage.ca.ca_sslPassword }}' -extensions v3_req -extfile /usr/lib/ssl/openssl.cnf"
+- name: Generate a Signed OpenSSL certificate for wildcard cert
+  shell: "openssl x509 -req -days {{ ca_default_days }} -in {{ ca_generated_certs_dir }}/{{ item }}.csr -CA {{ ca_generated_certs_dir }}/{{ ca_cert }} -CAkey {{ ca_generated_certs_dir }}/{{ ca_key }} -CAcreateserial -out {{ ca_generated_certs_dir }}/{{ item }}-cert.pem -passin pass:'{{ stage.ca.ca_sslPassword }}' -extensions SAN -extfile <(printf '[SAN]\nsubjectAltName=DNS:*.{{ stage.ca.ca_domain }}')"
   args:
+    executable: /bin/bash
     chdir: "{{ ca_generated_certs_dir }}"
     creates: "{{ ca_generated_certs_dir }}/{{ item }}-cert.pem"
   with_items:

@@ -1,18 +1,19 @@
 ---
-# Check for CA key existence (so we don't generate a new onw on every run)
+# Check for CA key existence (so we don't generate a new one on every run)
 - block:
 
-    - name: "Check if ca-key.pem exists"
+    - name: "Check if {{ ca_key }} exists"
       stat: path="{{ ca_default_ssl_key_dir }}/{{ ca_key }}"
       register: _key_file
 
     - name: "Key at {{ ca_default_ssl_key_dir }}/{{ ca_key }} exists"
-      debug: msg="{{ ca_default_ssl_key_dir }}/{{ ca_key }} is present
-                  - Since the ca_key exists, this role will not generate a new one
-                  unless you invoke ca_force_create."
+      debug:
+        msg:
+          - "{{ ca_default_ssl_key_dir }}/{{ ca_key }} is present."
+          - This role will not create a new key unless ca_force_create is true.
       when: _key_file.stat.exists
 
-    - name: "Set _ca_key_exists to true"
+    - name: "Set _ca_key_exists var to true"
       set_fact:
         _ca_key_exists: true
       when: _key_file.stat.exists
@@ -22,33 +23,63 @@
         _ca_key_exists: false
       when: not _key_file.stat.exists
 
-# Check for CA cert existence (so we don't generate a new onw on every run)
+# Check for CA cert existence (so we don't generate a new one on every run)
 - block:
 
-    - name: "Check if ca-cert.pem exists"
+    - name: "Check if {{ ca_cert }} exists"
       stat: path="{{ ca_default_ssl_certs_dir }}/{{ ca_cert }}"
       register: cert_file
 
-    - name: "Ensure that the existing certificate is still valid 2 weeks (1209600 seconds) from now"
+    - name: "Ensure {{ ca_cert }} is still valid {{ ca_cert_expiration_panic_threshold }} seconds from now"
       openssl_certificate:
         path: "{{ ca_default_ssl_certs_dir }}/{{ ca_cert }}"
         provider: assertonly
         valid_in: "{{ ca_cert_expiration_panic_threshold }}"
-      when: cert_file.stat.exists
+      when: cert_file.stat.exists and not ca_regen_cert|default(False)
       register: cert_validity
 
-    - debug: msg="{{ ca_default_ssl_certs_dir }}/{{ ca_cert }} is still valid no need to generate"
-      when: cert_file.stat.exists and cert_validity is not changed
+    - name: "Check if {{ ca_cert }} is not expiring within cert_validity timeframe"
+      debug:
+        msg: "{{ ca_default_ssl_certs_dir }}/{{ ca_cert }} is valid and will not be regenerated."
+      when: cert_file.stat.exists and cert_validity is not changed and not ca_regen_cert|default(False)
 
     - set_fact:
-        ca_force_create: false
         _ca_missing_cert: false
-      when: cert_file.stat.exists and cert_validity is not changed
+        ca_regen_cert: false
+      when: cert_file.stat.exists and cert_validity is not changed and not ca_regen_cert|default(False)
 
-    - debug: msg="{{ ca_default_ssl_certs_dir }}/{{ ca_cert }} is not valid - ca_force_create will be set"
-      when: not cert_file.stat.exists or cert_validity is changed
+    - name: "Check if {{ ca_cert }} is expiring within cert_validity timeframe"
+      debug:
+        msg: "{{ ca_default_ssl_certs_dir }}/{{ ca_cert }} is not valid and will be regenerated."
+      when: cert_file.stat.exists and cert_validity is changed and not ca_regen_cert|default(False)
 
     - set_fact:
-        ca_force_create: true
+        _ca_missing_cert: false
+        ca_regen_cert: true
+      when: cert_file.stat.exists and cert_validity is changed
+
+    - name: "Check if {{ ca_key }} exists but {{ ca_cert }} does not"
+      debug:
+        msg:
+          - "{{ ca_default_ssl_certs_dir }}/{{ ca_cert }} dpes not exist."
+          - The cert will be generated with the existing key.
+          - This role will not create a new key unless ca_force_create is true.
+      when: not cert_file.stat.exists and _key_file.stat.exists
+
+    - set_fact:
         _ca_missing_cert: true
-      when: not cert_file.stat.exists or cert_validity is changed
+        ca_regen_cert: true
+      when: not cert_file.stat.exists and _key_file.stat.exists
+
+    - name: "Check if {{ ca_key }} exists and ca_regen_cert value is set to true"
+      debug:
+        msg:
+          - "{{ ca_default_ssl_certs_dir }}/{{ ca_cert }} exists but ca_regen_cert was set to true."
+          - The cert will be generated with the existing key.
+          - This role will not create a new key unless ca_force_create is true.
+      when: _key_file.stat.exists and ca_regen_cert|default(False)
+
+    - set_fact:
+        _ca_missing_cert: false
+        ca_regen_cert : true
+      when: _key_file.stat.exists and ca_regen_cert|default(False)

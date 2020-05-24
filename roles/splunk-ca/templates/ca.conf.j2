@@ -1,17 +1,18 @@
 [ ca ]
-default_ca = Splunk_CA_default
+default_ca = Custom_CA_default
 
-[ Splunk_CA_default ]
+[ Custom_CA_default ]
+dir = {{ ca_conf_dir }}
 unique_subject = no
 new_certs_dir = {{ ca_generated_certs_dir }}
-certificate = {{ ca_cert }}
-database = certindex
 private_key = {{ ca_key }}
-serial = serial
+certificate = {{ ca_cert }}
+database = $dir/cert_index.txt
+serial = $dir/serial
 default_days = {{ ca_default_days }}
 default_md = sha256
 policy = ca_policy
-x509_extensions = v3_ca
+x509_extensions = v3_req
 
 [ ca_policy ]
 commonName = supplied
@@ -21,52 +22,54 @@ emailAddress = optional
 organizationName = supplied
 organizationalUnitName = optional
 
-[ ca_extensions ]
-basicConstraints = CA:false
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always
-keyUsage = digitalSignature,keyEncipherment
-extendedKeyUsage = serverAuth,clientAuth
-
 [ v3_ca ]
 # Extensions for a typical CA (`man x509v3_config`).
+keyUsage = critical, cRLSign, keyCertSign
+basicConstraints = critical, CA:TRUE, pathlen:3
 subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer
-basicConstraints = critical, CA:true
-keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+authorityKeyIdentifier  = keyid:always, issuer:always
+nsCertType = sslCA, emailCA
 
 [ req ]
-default_bits            = 2048
-default_keyfile         = privkey.pem
-distinguished_name      = req_distinguished_name
-attributes              = req_attributes
+prompt = no
+default_bits = 2048
+default_keyfile = privkey.pem
+distinguished_name = req_distinguished_name
+attributes = req_attributes
 string_mask = utf8only
+req_extensions = v3_req
+
+[ v3_req ]
+# Extensions for a typical client (`man x509v3_config`).
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+basicConstraints = critical, CA:FALSE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid, issuer:always
+subjectAltName = @alt_names
 
 [ req_distinguished_name ]
-countryName                     = Country Name (2 letter code)
-countryName_default             = {{ stage.ca.ca_country }}
-countryName_min                 = 2
-countryName_max                 = 2
+# Set default values so we aren't prompted
+# Country Name (2 letter code)
+C = {{ stage.ca.ca_country }}
 
-stateOrProvinceName             = State or Province Name (full name)
-stateOrProvinceName_default     = {{ stage.ca.ca_state }}
+# State or Province Name (full name)
+ST = {{ stage.ca.ca_state }}
 
-localityName                    = Locality Name (eg, city)
-localityName_default			= {{ stage.ca.ca_locality }}
-0.organizationName              = Organization Name (eg, company)
-0.organizationName_default      = {{ stage.ca.ca_organization }}
+# Locality Name (eg, city)
+L = {{ stage.ca.ca_locality }}
 
-organizationalUnitName          = Organizational Unit Name (eg, section)
-organizationalUnitName_default  = {{ stage.ca.ca_organizational_unit }}
+# Organization Name (eg, company)
+O = {{ stage.ca.ca_organization }}
 
-commonName                      = Common Name (e.g. server FQDN or YOUR name)
-commonName_max                  = 64
+# Organizational Unit Name (eg, section)
+OU = {{ stage.ca.ca_organizational_unit }}
 
+# Common Name (e.g. server FQDN or YOUR name)
+CN = {{ ansible_fqdn }}
 
-emailAddress                    = Email Address
-emailAddress_max                = 64
-emailAddress_default 			= {{ stage.ca.ca_email }}
-# SET-ex3                       = SET extension number 3
+# Email Address
+emailAddress = {{ stage.ca.ca_email }}
 
 [ req_attributes ]
 challengePassword               = A challenge password
@@ -74,3 +77,6 @@ challengePassword_min           = 4
 challengePassword_max           = 20
 
 unstructuredName                = An optional company name
+
+[ alt_names ]
+DNS.1                           = {{ ansible_fqdn }}

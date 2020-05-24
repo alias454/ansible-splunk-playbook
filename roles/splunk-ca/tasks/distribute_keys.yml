@@ -1,4 +1,5 @@
 ---
+# Runs for ALL hosts
 - name: "Ensures appropriate directories exist"
   file:
     path: "{{ item }}"
@@ -9,28 +10,30 @@
     - "{{ ca_default_ssl_key_dir }}"
     - "{{ ca_certs_dir }}"
 
-# Copy root CA cert to CA server default cert location
+# Runs on CA -- Copy root CA cert to CA server default cert location
 - name: "Copy cert to {{ ca_default_ssl_certs_dir }}"
   copy: src="{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}" dest="{{ ca_default_ssl_certs_dir }}/{{ item }}"
   with_items:
     - "{{ ca_cert }}"
   when:
+    - ca_init|default(False)
     - ca_distribute_root_keys|default(False)
     - "stage.ca.ca_descriptor in ansible_hostname"
   no_log: true
 
-# Copy root CA keys to CA server default key location
+# Runs on CA -- Copy root CA keys to CA server default key location
 - name: "Copy keys to {{ ca_default_ssl_key_dir }}"
   copy: src="{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ item }}" dest="{{ ca_default_ssl_key_dir }}/{{ item }}"
   with_items:
     - "{{ ca_key }}"
     - "{{ ca_pub_key }}"
   when:
+    - ca_init|default(False)
     - ca_distribute_root_keys|default(False)
     - "stage.ca.ca_descriptor in ansible_hostname"
   no_log: true
 
-# Copy root CA cert to client nodes to add as trusted CA
+# Runs for ALL hosts -- Copy root CA cert to client nodes to add as trusted CA
 - name: "Copy {{ ca_cert }} to {{ ca_certs_dir }}"
   copy:
     src: "{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ ca_cert }}"
@@ -40,10 +43,10 @@
     mode: 0644
   when: ca_distribute_ca_cert|default(False)
   notify:
-    - update trusted ca debian
+    - Update trusted CA for Debian based OS
   no_log: true
 
-# Host keys and certs
+# Runs for ALL hosts -- Host keys and certs
 - name: "Distribute inventory_hostname-priv-key.pem to inventory_hostname"
   copy: src="{{ ca_distribution_dir }}-{{ deploy_stage }}/{{ inventory_hostname }}-priv-key.pem" dest="{{ ca_default_ssl_key_dir }}/{{ inventory_hostname }}-priv-key.pem"
   when: ca_distribute_keys|default(False)
